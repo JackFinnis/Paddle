@@ -7,11 +7,13 @@
 
 import SwiftUI
 
+let SIZE = 48.0
+
 @main
 struct PaddleApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
     }
 }

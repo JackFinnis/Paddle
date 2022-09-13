@@ -7,18 +7,60 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		040BBAB128CF9AB700F8E2F6 /* Paddle.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAAF28CF9AB700F8E2F6 /* Paddle.xcdatamodeld */; };
+		040BBAB428CFAFA200F8E2F6 /* Locks.json in Resources */ = {isa = PBXBuildFile; fileRef = 040BBAB228CFAFA200F8E2F6 /* Locks.json */; };
+		040BBAB528CFAFA200F8E2F6 /* Weirs.json in Resources */ = {isa = PBXBuildFile; fileRef = 040BBAB328CFAFA200F8E2F6 /* Weirs.json */; };
+		040BBAB728CFC65A00F8E2F6 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAB628CFC65A00F8E2F6 /* Haptics.swift */; };
+		040BBABA28CFCA9200F8E2F6 /* FeatureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAB928CFCA9200F8E2F6 /* FeatureView.swift */; };
+		040BBABC28CFCA9B00F8E2F6 /* FeatureVM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBABB28CFCA9B00F8E2F6 /* FeatureVM.swift */; };
+		040BBABE28CFCAE500F8E2F6 /* MapBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBABD28CFCAE500F8E2F6 /* MapBox.swift */; };
+		040BBAC028CFD22200F8E2F6 /* FeatureTypeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBABF28CFD22200F8E2F6 /* FeatureTypeRow.swift */; };
+		040BBAC228D11BC300F8E2F6 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAC128D11BC300F8E2F6 /* View.swift */; };
+		040BBAC428D128D200F8E2F6 /* Blur.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAC328D128D200F8E2F6 /* Blur.swift */; };
+		040BBAC628D12FC400F8E2F6 /* AnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAC528D12FC400F8E2F6 /* AnnotationView.swift */; };
 		0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */; };
-		0490E1D628CDE86B0061FBF3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E1D528CDE86B0061FBF3 /* ContentView.swift */; };
 		0490E1D828CDE86C0061FBF3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0490E1D728CDE86C0061FBF3 /* Assets.xcassets */; };
-		0490E1DB28CDE86C0061FBF3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0490E1DA28CDE86C0061FBF3 /* Preview Assets.xcassets */; };
+		0490E21F28CDF0B20061FBF3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E21E28CDF0B20061FBF3 /* RootView.swift */; };
+		0490E22128CDF0CB0061FBF3 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E22028CDF0CB0061FBF3 /* ViewModel.swift */; };
+		0490E22328CDF1130061FBF3 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E22228CDF1130061FBF3 /* MapView.swift */; };
+		0490E22728CDF36D0061FBF3 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E22628CDF36D0061FBF3 /* Collection.swift */; };
+		0490E23128CDFF230061FBF3 /* MKMultiPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E23028CDFF230061FBF3 /* MKMultiPoint.swift */; };
+		0490E23728CE44DD0061FBF3 /* Canals.json in Resources */ = {isa = PBXBuildFile; fileRef = 0490E23628CE44DD0061FBF3 /* Canals.json */; };
+		0490E24A28CE52F00061FBF3 /* Canal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E24928CE52F00061FBF3 /* Canal.swift */; };
+		0490E24D28CE55070061FBF3 /* Row.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E24C28CE55070061FBF3 /* Row.swift */; };
+		0490E24F28CE585D0061FBF3 /* FloatingButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */; };
+		0490E25128CE6DBA0061FBF3 /* CLLocationCoordinate2D.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E25028CE6DBA0061FBF3 /* CLLocationCoordinate2D.swift */; };
+		0490E25828CE77DF0061FBF3 /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E25728CE77DF0061FBF3 /* Feature.swift */; };
+		0490E26028CE7F140061FBF3 /* NSObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E25F28CE7F140061FBF3 /* NSObject.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		040BBAB028CF9AB700F8E2F6 /* Main.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Main.xcdatamodel; sourceTree = "<group>"; };
+		040BBAB228CFAFA200F8E2F6 /* Locks.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Locks.json; sourceTree = "<group>"; };
+		040BBAB328CFAFA200F8E2F6 /* Weirs.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Weirs.json; sourceTree = "<group>"; };
+		040BBAB628CFC65A00F8E2F6 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		040BBAB928CFCA9200F8E2F6 /* FeatureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureView.swift; sourceTree = "<group>"; };
+		040BBABB28CFCA9B00F8E2F6 /* FeatureVM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureVM.swift; sourceTree = "<group>"; };
+		040BBABD28CFCAE500F8E2F6 /* MapBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapBox.swift; sourceTree = "<group>"; };
+		040BBABF28CFD22200F8E2F6 /* FeatureTypeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTypeRow.swift; sourceTree = "<group>"; };
+		040BBAC128D11BC300F8E2F6 /* View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
+		040BBAC328D128D200F8E2F6 /* Blur.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Blur.swift; sourceTree = "<group>"; };
+		040BBAC528D12FC400F8E2F6 /* AnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationView.swift; sourceTree = "<group>"; };
 		0490E1D028CDE86B0061FBF3 /* Paddle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paddle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddleApp.swift; sourceTree = "<group>"; };
-		0490E1D528CDE86B0061FBF3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0490E1D728CDE86C0061FBF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		0490E1DA28CDE86C0061FBF3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		0490E21E28CDF0B20061FBF3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		0490E22028CDF0CB0061FBF3 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
+		0490E22228CDF1130061FBF3 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		0490E22628CDF36D0061FBF3 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
+		0490E23028CDFF230061FBF3 /* MKMultiPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKMultiPoint.swift; sourceTree = "<group>"; };
+		0490E23628CE44DD0061FBF3 /* Canals.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Canals.json; sourceTree = "<group>"; };
+		0490E24928CE52F00061FBF3 /* Canal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Canal.swift; sourceTree = "<group>"; };
+		0490E24C28CE55070061FBF3 /* Row.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Row.swift; sourceTree = "<group>"; };
+		0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingButtons.swift; sourceTree = "<group>"; };
+		0490E25028CE6DBA0061FBF3 /* CLLocationCoordinate2D.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocationCoordinate2D.swift; sourceTree = "<group>"; };
+		0490E25728CE77DF0061FBF3 /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
+		0490E25F28CE7F140061FBF3 /* NSObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSObject.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +74,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		040BBAB828CFCA8600F8E2F6 /* Feature */ = {
+			isa = PBXGroup;
+			children = (
+				040BBAB928CFCA9200F8E2F6 /* FeatureView.swift */,
+				040BBABD28CFCAE500F8E2F6 /* MapBox.swift */,
+				040BBABB28CFCA9B00F8E2F6 /* FeatureVM.swift */,
+			);
+			path = Feature;
+			sourceTree = "<group>";
+		};
 		0490E1C728CDE86B0061FBF3 = {
 			isa = PBXGroup;
 			children = (
@@ -52,19 +104,70 @@
 			isa = PBXGroup;
 			children = (
 				0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */,
-				0490E1D528CDE86B0061FBF3 /* ContentView.swift */,
 				0490E1D728CDE86C0061FBF3 /* Assets.xcassets */,
-				0490E1D928CDE86C0061FBF3 /* Preview Content */,
+				040BBAAF28CF9AB700F8E2F6 /* Paddle.xcdatamodeld */,
+				0490E23828CE4A830061FBF3 /* Views */,
+				0490E23928CE4A880061FBF3 /* Models */,
+				0490E23A28CE4A8D0061FBF3 /* Extensions */,
+				0490E25228CE77790061FBF3 /* Data */,
 			);
 			path = Paddle;
 			sourceTree = "<group>";
 		};
-		0490E1D928CDE86C0061FBF3 /* Preview Content */ = {
+		0490E23828CE4A830061FBF3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				0490E1DA28CDE86C0061FBF3 /* Preview Assets.xcassets */,
+				0490E21E28CDF0B20061FBF3 /* RootView.swift */,
+				0490E22228CDF1130061FBF3 /* MapView.swift */,
+				0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */,
+				040BBAB828CFCA8600F8E2F6 /* Feature */,
+				0490E24B28CE54F60061FBF3 /* Extra */,
 			);
-			path = "Preview Content";
+			path = Views;
+			sourceTree = "<group>";
+		};
+		0490E23928CE4A880061FBF3 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0490E22028CDF0CB0061FBF3 /* ViewModel.swift */,
+				040BBAB628CFC65A00F8E2F6 /* Haptics.swift */,
+				0490E24928CE52F00061FBF3 /* Canal.swift */,
+				0490E25728CE77DF0061FBF3 /* Feature.swift */,
+				040BBAC528D12FC400F8E2F6 /* AnnotationView.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		0490E23A28CE4A8D0061FBF3 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				0490E23028CDFF230061FBF3 /* MKMultiPoint.swift */,
+				040BBAC128D11BC300F8E2F6 /* View.swift */,
+				0490E25028CE6DBA0061FBF3 /* CLLocationCoordinate2D.swift */,
+				0490E22628CDF36D0061FBF3 /* Collection.swift */,
+				0490E25F28CE7F140061FBF3 /* NSObject.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		0490E24B28CE54F60061FBF3 /* Extra */ = {
+			isa = PBXGroup;
+			children = (
+				0490E24C28CE55070061FBF3 /* Row.swift */,
+				040BBAC328D128D200F8E2F6 /* Blur.swift */,
+				040BBABF28CFD22200F8E2F6 /* FeatureTypeRow.swift */,
+			);
+			path = Extra;
+			sourceTree = "<group>";
+		};
+		0490E25228CE77790061FBF3 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				0490E23628CE44DD0061FBF3 /* Canals.json */,
+				040BBAB228CFAFA200F8E2F6 /* Locks.json */,
+				040BBAB328CFAFA200F8E2F6 /* Weirs.json */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -125,8 +228,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0490E1DB28CDE86C0061FBF3 /* Preview Assets.xcassets in Resources */,
+				040BBAB528CFAFA200F8E2F6 /* Weirs.json in Resources */,
 				0490E1D828CDE86C0061FBF3 /* Assets.xcassets in Resources */,
+				0490E23728CE44DD0061FBF3 /* Canals.json in Resources */,
+				040BBAB428CFAFA200F8E2F6 /* Locks.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +242,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0490E1D628CDE86B0061FBF3 /* ContentView.swift in Sources */,
+				0490E21F28CDF0B20061FBF3 /* RootView.swift in Sources */,
+				0490E22328CDF1130061FBF3 /* MapView.swift in Sources */,
+				040BBAC428D128D200F8E2F6 /* Blur.swift in Sources */,
+				0490E22728CDF36D0061FBF3 /* Collection.swift in Sources */,
+				040BBABA28CFCA9200F8E2F6 /* FeatureView.swift in Sources */,
+				040BBABC28CFCA9B00F8E2F6 /* FeatureVM.swift in Sources */,
+				0490E26028CE7F140061FBF3 /* NSObject.swift in Sources */,
+				040BBAC228D11BC300F8E2F6 /* View.swift in Sources */,
+				040BBABE28CFCAE500F8E2F6 /* MapBox.swift in Sources */,
+				040BBAB128CF9AB700F8E2F6 /* Paddle.xcdatamodeld in Sources */,
+				040BBAC628D12FC400F8E2F6 /* AnnotationView.swift in Sources */,
+				0490E24F28CE585D0061FBF3 /* FloatingButtons.swift in Sources */,
+				0490E25128CE6DBA0061FBF3 /* CLLocationCoordinate2D.swift in Sources */,
+				0490E24A28CE52F00061FBF3 /* Canal.swift in Sources */,
+				0490E22128CDF0CB0061FBF3 /* ViewModel.swift in Sources */,
+				0490E23128CDFF230061FBF3 /* MKMultiPoint.swift in Sources */,
+				040BBAC028CFD22200F8E2F6 /* FeatureTypeRow.swift in Sources */,
+				0490E24D28CE55070061FBF3 /* Row.swift in Sources */,
+				040BBAB728CFC65A00F8E2F6 /* Haptics.swift in Sources */,
+				0490E25828CE77DF0061FBF3 /* Feature.swift in Sources */,
 				0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -266,10 +390,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Paddle/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 4CQW4CFFYT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is shown on the map";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -295,10 +420,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"Paddle/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 4CQW4CFFYT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is shown on the map";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -339,6 +465,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		040BBAAF28CF9AB700F8E2F6 /* Paddle.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				040BBAB028CF9AB700F8E2F6 /* Main.xcdatamodel */,
+			);
+			currentVersion = 040BBAB028CF9AB700F8E2F6 /* Main.xcdatamodel */;
+			path = Paddle.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 0490E1C828CDE86B0061FBF3 /* Project object */;
 }
