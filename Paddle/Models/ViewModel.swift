@@ -21,13 +21,18 @@ class ViewModel: NSObject, ObservableObject {
         return canals.filter { $0.name == name }
     }
     
-    @Published var userTrackingMode = MKUserTrackingMode.none
-    @Published var mapType = MKMapType.standard
+    // Search Bar
+    @Published var isSearching = false
+    @Published var noResults = false
     
-    // MKMapViewDelegate
+    // Map View
     var zoomedIn = false
     var coord = CLLocationCoordinate2D()
     var mapView: MKMapView?
+    @Published var userTrackingMode = MKUserTrackingMode.none
+    @Published var mapType = MKMapType(rawValue: UInt(UserDefaults.standard.integer(forKey: "mapType")))! { didSet {
+        UserDefaults.standard.set(Int(mapType.rawValue), forKey: "mapType")
+    }}
     
     // Persistence
     let container = NSPersistentContainer(name: "Paddle")
@@ -79,7 +84,7 @@ class ViewModel: NSObject, ObservableObject {
 //            print(error)
 //        }
         
-        var features = (try? container.viewContext.fetch(Feature.fetchRequest()) as? [Feature]) ?? []
+        features = (try? container.viewContext.fetch(Feature.fetchRequest()) as? [Feature]) ?? []
         
         // If first app launch, load features from JSON to Core Data
         if features.isEmpty {
@@ -109,7 +114,7 @@ class ViewModel: NSObject, ObservableObject {
     }
     
     func setSelectedRegion() {
-        mapView?.setVisibleMapRect(MKMultiPolyline(selectedCanals).boundingMapRect, edgePadding: UIEdgeInsets(top: 20, left: 20, bottom: 80, right: 20), animated: true)
+        mapView?.setVisibleMapRect(MKMultiPolyline(selectedCanals).boundingMapRect, edgePadding: UIEdgeInsets(top: 60, left: 20, bottom: 80, right: 20), animated: true)
     }
 }
 
@@ -118,7 +123,7 @@ extension ViewModel: MKMapViewDelegate {
         if let canal = overlay as? Canal {
             let renderer = MKPolylineRenderer(polyline: canal)
             renderer.lineWidth = 3
-            renderer.strokeColor = .orange
+            renderer.strokeColor = UIColor(.orange)
             return renderer
         } else if let canals = overlay as? MKMultiPolyline {
             let renderer = MKMultiPolylineRenderer(multiPolyline: canals)
@@ -141,6 +146,14 @@ extension ViewModel: MKMapViewDelegate {
         return nil
     }
     
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        if view.annotation is MKUserLocation, let coord = view.annotation?.coordinate {
+            mapView.deselectAnnotation(view.annotation, animated: false)
+            self.coord = coord
+            showFeatureView = true
+        }
+    }
+    
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
         if !zoomedIn {
             zoomedIn = true
@@ -154,11 +167,44 @@ extension ViewModel: MKMapViewDelegate {
         }
     }
     
-    @objc func handleTap(_ tap: UITapGestureRecognizer) {
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        if let feature = view.annotation as? Feature {
+            if control == view.leftCalloutAccessoryView {
+                selectedFeature = feature
+                showFeatureView = true
+            } else {
+                openInMaps(name: feature.name, coord: feature.coordinate)
+            }
+        }
+    }
+    
+    func openInMaps(name: String, coord: CLLocationCoordinate2D) {
+        CLGeocoder().reverseGeocodeLocation(coord.getLocation()) { placemarks, error in
+            if let placemark = placemarks?.first {
+                let mapItem = MKMapItem(placemark: MKPlacemark(placemark: placemark))
+                mapItem.name = name
+                mapItem.openInMaps()
+            }
+        }
+    }
+    
+    @objc
+    func handleLongPress(_ tap: UITapGestureRecognizer) {
+        guard let mapView = mapView else { return }
+        let pressPoint = tap.location(in: mapView)
+        coord = mapView.convert(pressPoint, toCoordinateFrom: mapView)
+        showFeatureView = true
+    }
+    
+    @objc
+    func handleTap(_ tap: UITapGestureRecognizer) {
         guard let mapView = mapView else { return }
         let tapPoint = tap.location(in: mapView)
         let tapCoord = mapView.convert(tapPoint, toCoordinateFrom: mapView)
-        
+        selectClosestCanal(to: tapCoord)
+    }
+    
+    func selectClosestCanal(to targetCoord: CLLocationCoordinate2D) {
         var shortestDistance = Double.infinity
         var closestCanal: Canal?
         
@@ -169,7 +215,7 @@ extension ViewModel: MKMapViewDelegate {
             }
             
             for coord in filteredCoords {
-                let delta = tapCoord.distance(to: coord)
+                let delta = targetCoord.distance(to: coord)
                 
                 if delta < shortestDistance && delta < 1000 {
                     shortestDistance = delta
@@ -180,28 +226,42 @@ extension ViewModel: MKMapViewDelegate {
         
         selectedCanalName = closestCanal?.name
     }
-    
-    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        if let feature = view.annotation as? Feature {
-            if control == view.leftCalloutAccessoryView {
-                selectedFeature = feature
-                showFeatureView = true
-            } else {
-                openInMaps(coord: feature.coordinate)
-            }
+}
+
+extension ViewModel: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let text = searchBar.text, text.isNotEmpty else { return }
+        if search(text: text) {
+            searchBar.resignFirstResponder()
+        } else {
+            noResults = true
         }
     }
     
-    func openInMaps(coord: CLLocationCoordinate2D) {
-        CLGeocoder().reverseGeocodeLocation(coord.getLocation()) { placemarks, error in
-            if let placemark = placemarks?.first {
-                let options: [String: Any] = [
-                    MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: self.mapView?.region.span ?? MKCoordinateSpan()),
-                    MKLaunchOptionsMapTypeKey: self.mapType.rawValue,
-                    MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDefault
-                ]
-                MKMapItem(placemark: MKPlacemark(placemark: placemark)).openInMaps(launchOptions: options)
-            }
+    // Return whether a result is found
+    func search(text: String) -> Bool {
+        // Search canals
+        for canal in canals where canal.name.localizedCaseInsensitiveContains(text) {
+            selectedCanalName = canal.name
+            setSelectedRegion()
+            return true
         }
+        
+        // Search features
+        for feature in features where feature.name.localizedCaseInsensitiveContains(text) {
+            selectedFeature = feature
+            selectClosestCanal(to: feature.coordinate)
+            
+            let delta = 0.05
+            let span = MKCoordinateSpan(latitudeDelta: delta, longitudeDelta: delta)
+            let region = MKCoordinateRegion(center: feature.coordinate, span: span)
+            mapView?.setRegion(region, animated: true)
+            mapView?.selectAnnotation(feature, animated: true)
+            return true
+        }
+        
+        // Search locations
+        //todo
+        return false
     }
 }

@@ -17,19 +17,20 @@ struct RootView: View {
             
             VStack(spacing: 0) {
                 if vm.selectedCanalName?.isNotEmpty ?? false {
-                    Text(vm.selectedCanalName ?? "").font(.headline)
+                    Text(vm.selectedCanalName ?? "")
+                        .font(.headline)
                         .animation(.none, value: vm.selectedCanalName)
-                        .padding(.bottom, 10)
+                        .frame(height: 50)
                         .horizontallyCentred()
+                        .background(Blur().ignoresSafeArea())
                         .onTapGesture(perform: vm.setSelectedRegion)
-                        .background {
-                            Blur().ignoresSafeArea()
-                        }
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 } else {
-                    Blur().ignoresSafeArea()
+                    Blur()
+                        .ignoresSafeArea()
+                        .transition(.opacity)
                 }
                 
-                Divider()
                 Spacer()
                     .layoutPriority(1)
             }
@@ -40,7 +41,6 @@ struct RootView: View {
                 FloatingButtons()
             }
         }
-        .preferredColorScheme(vm.mapType == .hybrid ? .dark : .light)
         .environmentObject(vm)
         .onAppear {
             vm.loadData()

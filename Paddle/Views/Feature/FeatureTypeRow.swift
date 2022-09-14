@@ -20,8 +20,8 @@ struct FeatureTypeRow: View {
         } icon: {
             if type == .lock {
                 Image(systemName: "chevron.right")
-                    .font(.title.bold())
-                    .foregroundColor(.black)
+                    .font(.title.weight(.semibold))
+                    .foregroundColor(type.color)
             } else {
                 Circle()
                     .frame(width: SIZE/2, height: SIZE/2)

@@ -19,7 +19,7 @@ class FeatureVM: NSObject, ObservableObject {
     
     init(feature: Feature?, coordinate: CLLocationCoordinate2D) {
         coord = coordinate
-        type = feature?.type ?? .feature
+        type = feature?.type ?? .lock
         name = feature?.name ?? ""
         angle = feature?.angle ?? 0
         self.feature = feature

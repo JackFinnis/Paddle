@@ -85,7 +85,7 @@ enum FeatureType: Int16, CaseIterable, Codable {
     var color: Color {
         switch self {
         case .lock:
-            return .black
+            return .accentColor
         case .weir:
             return .orange
         case .launchPoint:
@@ -93,7 +93,7 @@ enum FeatureType: Int16, CaseIterable, Codable {
         case .obstruction:
             return .yellow
         case .feature:
-            return .accentColor
+            return .green
         }
     }
 }

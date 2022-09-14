@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct Blur: UIViewRepresentable {
     func makeUIView(context: Context) -> UIVisualEffectView {

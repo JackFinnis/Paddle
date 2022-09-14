@@ -20,11 +20,14 @@ struct MapView: UIViewRepresentable {
         mapView.showsScale = true
         mapView.showsCompass = true
         mapView.isPitchEnabled = false
+        mapView.mapType = MKMapType(rawValue: UInt(UserDefaults.standard.integer(forKey: "mapType")))!
         
         mapView.register(AnnotationView.self, forAnnotationViewWithReuseIdentifier: AnnotationView.id)
         
         let tapRecognizer = UITapGestureRecognizer(target: vm, action: #selector(ViewModel.handleTap))
+        let longPressRecognizer = UILongPressGestureRecognizer(target: vm, action: #selector(ViewModel.handleLongPress))
         mapView.addGestureRecognizer(tapRecognizer)
+        mapView.addGestureRecognizer(longPressRecognizer)
         
         return mapView
     }

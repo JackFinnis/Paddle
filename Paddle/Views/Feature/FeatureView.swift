@@ -38,7 +38,7 @@ struct FeatureView: View {
                         MapBox(featureVM: featureVM)
                         if featureVM.type == .lock {
                             Image(systemName: "chevron.left")
-                                .font(.title.bold())
+                                .font(.title.weight(.semibold))
                                 .rotationEffect(.degrees(featureVM.angle))
                                 .foregroundColor(.white)
                         } else {
@@ -59,9 +59,11 @@ struct FeatureView: View {
             }
             .navigationTitle(featureVM.feature == nil ? "New Feature" : "Edit Feature")
             .navigationBarTitleDisplayMode(.inline)
+            .interactiveDismissDisabled()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
+                        vm.selectedFeature = nil
                         dismiss()
                     }
                 }
@@ -107,6 +109,7 @@ struct FeatureView: View {
         }
         vm.features.append(feature)
         
+        Haptics.success()
         vm.selectedFeature = nil
         dismiss()
     }
@@ -120,6 +123,7 @@ struct FeatureView: View {
         vm.container.viewContext.delete(feature)
         vm.save()
         
+        Haptics.success()
         vm.selectedFeature = nil
         dismiss()
     }
