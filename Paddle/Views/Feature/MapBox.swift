@@ -15,7 +15,7 @@ struct MapBox: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = featureVM
         
-        let spanDelta = 0.0007
+        let spanDelta = 0.00054
         let span = MKCoordinateSpan(latitudeDelta: spanDelta, longitudeDelta: spanDelta)
         let region = MKCoordinateRegion(center: featureVM.coord, span: span)
         mapView.region = region

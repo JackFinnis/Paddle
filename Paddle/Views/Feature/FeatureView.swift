@@ -17,53 +17,53 @@ struct FeatureView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section {
-                    TextField("Name", text: $featureVM.name)
-                        .disableAutocorrection(true)
-                        .submitLabel(.done)
-                    Picker("Type", selection: $featureVM.type) {
-                        ForEach(FeatureType.allCases, id: \.self) { type in
-                            FeatureTypeRow(type)
+            ScrollViewReader { scrollView in
+                Form {
+                    Section {
+                        TextField("Name", text: $featureVM.name)
+                            .disableAutocorrection(true)
+                            .submitLabel(.done)
+                        Picker("Type", selection: $featureVM.type) {
+                            ForEach(FeatureType.allCases, id: \.self) { type in
+                                FeatureTypeRow(type)
+                            }
                         }
-                    }
-                    if featureVM.type == .lock {
-                        HStack {
-                            Text("Direction")
-                            Slider(value: $featureVM.angle, in: -360...360)
-                        }
-                    }
-                } header: {
-                    ZStack {
-                        MapBox(featureVM: featureVM)
                         if featureVM.type == .lock {
-                            Image(systemName: "chevron.left")
-                                .font(.title.weight(.semibold))
-                                .rotationEffect(.degrees(featureVM.angle))
-                                .foregroundColor(.white)
-                        } else {
-                            Circle()
-                                .frame(width: SIZE/2, height: SIZE/2)
-                                .foregroundColor(featureVM.type.color)
+                            HStack {
+                                Text("Direction")
+                                Slider(value: $featureVM.angle, in: -360...360)
+                            }
                         }
+                    } header: {
+                        ZStack {
+                            MapBox(featureVM: featureVM)
+                            if featureVM.type == .lock {
+                                Image(systemName: "chevron.left")
+                                    .font(.title.weight(.semibold))
+                                    .rotationEffect(.degrees(featureVM.angle))
+                                    .foregroundColor(.white)
+                            } else {
+                                Circle()
+                                    .frame(width: SIZE/2, height: SIZE/2)
+                                    .foregroundColor(featureVM.type.color)
+                            }
+                        }
+                        .aspectRatio(1, contentMode: .fill)
+                        .cornerRadius(10)
                     }
-                    .aspectRatio(1, contentMode: .fill)
-                    .cornerRadius(10)
+                    
+                    Button("Submit", action: submit)
+                        .horizontallyCentred()
+                        .font(.body.bold())
+                        .foregroundColor(.white)
+                        .listRowBackground(Color.accentColor)
                 }
-                
-                Button("Submit", action: submit)
-                    .horizontallyCentred()
-                    .font(.body.bold())
-                    .foregroundColor(.white)
-                    .listRowBackground(Color.accentColor)
             }
             .navigationTitle(featureVM.feature == nil ? "New Feature" : "Edit Feature")
             .navigationBarTitleDisplayMode(.inline)
-            .interactiveDismissDisabled()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        vm.selectedFeature = nil
                         dismiss()
                     }
                 }
@@ -73,7 +73,7 @@ struct FeatureView: View {
                             showConfirmation = true
                         }
                         .foregroundColor(.red)
-                        .confirmationDialog("Delete Feature?", isPresented: $showConfirmation, titleVisibility: .visible) {
+                        .confirmationDialog("Delete Feature?", isPresented: $showConfirmation, titleVisibility: .hidden) {
                             Button("Cancel", role: .cancel) {}
                             Button("Delete", role: .destructive) {
                                 delete(feature: feature)
@@ -110,7 +110,6 @@ struct FeatureView: View {
         vm.features.append(feature)
         
         Haptics.success()
-        vm.selectedFeature = nil
         dismiss()
     }
     
@@ -124,7 +123,6 @@ struct FeatureView: View {
         vm.save()
         
         Haptics.success()
-        vm.selectedFeature = nil
         dismiss()
     }
 }

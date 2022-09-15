@@ -12,7 +12,13 @@ import CoreData
 class ViewModel: NSObject, ObservableObject {
     var features = [Feature]()
     var selectedFeature: Feature?
-    @Published var showFeatureView = false
+    @Published var showFeatureView = false { didSet {
+        if showFeatureView {
+            isSearching = false
+        } else {
+            selectedFeature = nil
+        }
+    }}
     
     var canals = [Canal]()
     @Published var selectedCanalName: String?
@@ -22,17 +28,20 @@ class ViewModel: NSObject, ObservableObject {
     }
     
     // Search Bar
-    @Published var isSearching = false
+    var searchBar: UISearchBar?
+    var search: MKLocalSearch?
+    var searchResults = [MKPointAnnotation]()
     @Published var noResults = false
+    @Published var isSearching = false { didSet {
+        resetSearch()
+    }}
     
     // Map View
     var zoomedIn = false
     var coord = CLLocationCoordinate2D()
     var mapView: MKMapView?
     @Published var userTrackingMode = MKUserTrackingMode.none
-    @Published var mapType = MKMapType(rawValue: UInt(UserDefaults.standard.integer(forKey: "mapType")))! { didSet {
-        UserDefaults.standard.set(Int(mapType.rawValue), forKey: "mapType")
-    }}
+    @Published var mapType = MKMapType.standard
     
     // Persistence
     let container = NSPersistentContainer(name: "Paddle")
@@ -67,6 +76,7 @@ class ViewModel: NSObject, ObservableObject {
             }
             let canal = Canal(coordinates: coordinates, count: coordinates.count)
             canal.name = data.name
+            canal.distance = data.dist
             return canal
         }
         
@@ -114,7 +124,13 @@ class ViewModel: NSObject, ObservableObject {
     }
     
     func setSelectedRegion() {
-        mapView?.setVisibleMapRect(MKMultiPolyline(selectedCanals).boundingMapRect, edgePadding: UIEdgeInsets(top: 60, left: 20, bottom: 80, right: 20), animated: true)
+        for annotation in mapView?.selectedAnnotations ?? [] {
+            mapView?.deselectAnnotation(annotation, animated: true)
+        }
+        
+        let rect = MKMultiPolyline(selectedCanals).boundingMapRect
+        let padding = UIEdgeInsets(top: 20, left: 20, bottom: 80, right: 20)
+        mapView?.setVisibleMapRect(rect, edgePadding: padding, animated: true)
     }
 }
 
@@ -142,16 +158,28 @@ extension ViewModel: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if let feature = annotation as? Feature {
             return mapView.dequeueReusableAnnotationView(withIdentifier: AnnotationView.id, for: feature)
+        } else if let searchResult = annotation as? MKPointAnnotation {
+            let view = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: searchResult)
+            view.clusteringIdentifier = MKMarkerAnnotationView.id
+            return view
         }
         return nil
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        if view.annotation is MKUserLocation, let coord = view.annotation?.coordinate {
+        guard let coord = view.annotation?.coordinate else { return }
+        
+        if view.annotation is MKUserLocation {
             mapView.deselectAnnotation(view.annotation, animated: false)
             self.coord = coord
             showFeatureView = true
         }
+    }
+    
+    func setRegion(center: CLLocationCoordinate2D, delta: CLLocationDegrees, animated: Bool) {
+        let span = MKCoordinateSpan(latitudeDelta: delta, longitudeDelta: delta)
+        let region = MKCoordinateRegion(center: center, span: span)
+        mapView?.setRegion(region, animated: animated)
     }
     
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
@@ -173,7 +201,7 @@ extension ViewModel: MKMapViewDelegate {
                 selectedFeature = feature
                 showFeatureView = true
             } else {
-                openInMaps(name: feature.name, coord: feature.coordinate)
+                openInMaps(name: feature.title ?? feature.name, coord: feature.coordinate)
             }
         }
     }
@@ -231,37 +259,74 @@ extension ViewModel: MKMapViewDelegate {
 extension ViewModel: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let text = searchBar.text, text.isNotEmpty else { return }
-        if search(text: text) {
-            searchBar.resignFirstResponder()
-        } else {
-            noResults = true
+        search(text: text) { success in
+            if success {
+                searchBar.resignFirstResponder()
+            } else {
+                Haptics.error()
+                self.noResults = true
+            }
         }
     }
     
+    func resetSearch() {
+        selectedCanalName = nil
+        mapView?.removeAnnotations(searchResults)
+        searchResults = []
+    }
+    
     // Return whether a result is found
-    func search(text: String) -> Bool {
+    func search(text: String, completion: @escaping (Bool) -> Void) {
+        resetSearch()
+        
         // Search canals
         for canal in canals where canal.name.localizedCaseInsensitiveContains(text) {
             selectedCanalName = canal.name
             setSelectedRegion()
-            return true
+            completion(true)
+            return
         }
         
         // Search features
         for feature in features where feature.name.localizedCaseInsensitiveContains(text) {
-            selectedFeature = feature
             selectClosestCanal(to: feature.coordinate)
             
-            let delta = 0.05
-            let span = MKCoordinateSpan(latitudeDelta: delta, longitudeDelta: delta)
-            let region = MKCoordinateRegion(center: feature.coordinate, span: span)
-            mapView?.setRegion(region, animated: true)
+            selectedFeature = feature
+            setRegion(center: feature.coordinate, delta: 0.05, animated: false)
             mapView?.selectAnnotation(feature, animated: true)
-            return true
+            completion(true)
+            return
         }
         
         // Search locations
-        //todo
-        return false
+        mapSearch(text: text, completion: completion)
+    }
+    
+    func mapSearch(text: String, completion: @escaping (Bool) -> Void) {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = text
+        // Set request region to the UK
+        let centre = CLLocationCoordinate2D(latitude: 54.093409, longitude: -2.89479)
+        let span = MKCoordinateSpan(latitudeDelta: 14.83, longitudeDelta: 12.22)
+        let region = MKCoordinateRegion(center: centre, span: span)
+        request.region = region
+        
+        search?.cancel()
+        search = MKLocalSearch(request: request)
+        search?.start { response, error in
+            guard let response = response else { completion(false); return }
+            self.searchResults = response.mapItems.map { item -> MKPointAnnotation in
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = item.placemark.coordinate
+                annotation.title = item.name
+                annotation.subtitle = item.placemark.title
+                return annotation
+            }
+            DispatchQueue.main.async {
+                self.mapView?.addAnnotations(self.searchResults)
+                self.mapView?.setRegion(response.boundingRegion, animated: true)
+                completion(true)
+            }
+        }
     }
 }

@@ -10,9 +10,11 @@ import MapKit
 
 class Canal: MKPolyline {
     var name = ""
+    var distance = Double.zero
 }
 
 struct CanalData: Codable {
     let name: String
+    let dist: Double
     let coords: [[Double]]
 }

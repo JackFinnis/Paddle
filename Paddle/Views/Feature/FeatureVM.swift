@@ -31,4 +31,8 @@ extension FeatureVM: MKMapViewDelegate {
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
         coord = mapView.region.center
     }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        mapView.deselectAnnotation(view.annotation, animated: false)
+    }
 }

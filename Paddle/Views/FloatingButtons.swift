@@ -11,6 +11,9 @@ struct FloatingButtons: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var vm: ViewModel
     
+    @State var degrees = 0.0
+    @State var scale = 1.0
+    
     var background: Material { colorScheme == .light ? .regularMaterial : .thickMaterial }
     
     var body: some View {
@@ -43,6 +46,8 @@ struct FloatingButtons: View {
                         } label: {
                             Image(systemName: mapTypeImage)
                                 .frame(width: SIZE, height: SIZE)
+                                .rotation3DEffect(.degrees(vm.mapType == .hybrid ? 180 : 0), axis: (x: 0, y: 1, z: 0))
+                                .rotation3DEffect(.degrees(degrees), axis: (x: 0, y: 1, z: 0))
                         }
                         
                         Divider().frame(height: SIZE)
@@ -52,6 +57,7 @@ struct FloatingButtons: View {
                         } label: {
                             Image(systemName: trackingModeImage)
                                 .frame(width: SIZE, height: SIZE)
+                                .scaleEffect(scale)
                         }
                     }
                     .background(background)
@@ -102,25 +108,46 @@ struct FloatingButtons: View {
     }
     
     func updateTrackingMode() {
-        switch vm.userTrackingMode {
-        case .none:
+        if vm.userTrackingMode == .none {
             vm.userTrackingMode = .follow
-        case .follow:
-            vm.userTrackingMode = .followWithHeading
-        default:
-            vm.userTrackingMode = .none
+            vm.mapView?.setUserTrackingMode(vm.userTrackingMode, animated: true)
+        } else {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                scale = 0
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                switch vm.userTrackingMode {
+                case .none:
+                    vm.userTrackingMode = .follow
+                case .follow:
+                    vm.userTrackingMode = .followWithHeading
+                default:
+                    vm.userTrackingMode = .none
+                }
+                vm.mapView?.setUserTrackingMode(vm.userTrackingMode, animated: true)
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    scale = 1
+                }
+            }
         }
-        vm.mapView?.setUserTrackingMode(vm.userTrackingMode, animated: true)
     }
     
     func updateMapType() {
-        switch vm.mapType {
-        case .standard:
-            vm.mapType = .hybrid
-        default:
-            vm.mapType = .standard
+        withAnimation(.easeInOut(duration: 0.25)) {
+            degrees += 90
         }
-        vm.mapView?.mapType = vm.mapType
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            switch vm.mapType {
+            case .standard:
+                vm.mapType = .hybrid
+            default:
+                vm.mapType = .standard
+            }
+            vm.mapView?.mapType = vm.mapType
+            withAnimation(.easeInOut(duration: 0.3)) {
+                degrees += 90
+            }
+        }
     }
     
     var trackingModeImage: String {

@@ -20,6 +20,8 @@
 		040BBAC628D12FC400F8E2F6 /* AnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAC528D12FC400F8E2F6 /* AnnotationView.swift */; };
 		040BBAC828D274E600F8E2F6 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 040BBAC728D274E600F8E2F6 /* Launch Screen.storyboard */; };
 		040BBACD28D28A8100F8E2F6 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBACC28D28A8100F8E2F6 /* SearchBar.swift */; };
+		040BBAD128D3D02500F8E2F6 /* CanalTitle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAD028D3D02500F8E2F6 /* CanalTitle.swift */; };
+		040BBAD328D3D2B200F8E2F6 /* Canals.json in Resources */ = {isa = PBXBuildFile; fileRef = 040BBAD228D3D2B200F8E2F6 /* Canals.json */; };
 		0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */; };
 		0490E1D828CDE86C0061FBF3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0490E1D728CDE86C0061FBF3 /* Assets.xcassets */; };
 		0490E21F28CDF0B20061FBF3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E21E28CDF0B20061FBF3 /* RootView.swift */; };
@@ -27,7 +29,6 @@
 		0490E22328CDF1130061FBF3 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E22228CDF1130061FBF3 /* MapView.swift */; };
 		0490E22728CDF36D0061FBF3 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E22628CDF36D0061FBF3 /* Collection.swift */; };
 		0490E23128CDFF230061FBF3 /* MKMultiPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E23028CDFF230061FBF3 /* MKMultiPoint.swift */; };
-		0490E23728CE44DD0061FBF3 /* Canals.json in Resources */ = {isa = PBXBuildFile; fileRef = 0490E23628CE44DD0061FBF3 /* Canals.json */; };
 		0490E24A28CE52F00061FBF3 /* Canal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E24928CE52F00061FBF3 /* Canal.swift */; };
 		0490E24D28CE55070061FBF3 /* Row.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E24C28CE55070061FBF3 /* Row.swift */; };
 		0490E24F28CE585D0061FBF3 /* FloatingButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */; };
@@ -51,6 +52,8 @@
 		040BBAC728D274E600F8E2F6 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		040BBAC928D2777000F8E2F6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		040BBACC28D28A8100F8E2F6 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		040BBAD028D3D02500F8E2F6 /* CanalTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanalTitle.swift; sourceTree = "<group>"; };
+		040BBAD228D3D2B200F8E2F6 /* Canals.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Canals.json; sourceTree = "<group>"; };
 		0490E1D028CDE86B0061FBF3 /* Paddle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paddle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddleApp.swift; sourceTree = "<group>"; };
 		0490E1D728CDE86C0061FBF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -59,7 +62,6 @@
 		0490E22228CDF1130061FBF3 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		0490E22628CDF36D0061FBF3 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		0490E23028CDFF230061FBF3 /* MKMultiPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKMultiPoint.swift; sourceTree = "<group>"; };
-		0490E23628CE44DD0061FBF3 /* Canals.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Canals.json; sourceTree = "<group>"; };
 		0490E24928CE52F00061FBF3 /* Canal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Canal.swift; sourceTree = "<group>"; };
 		0490E24C28CE55070061FBF3 /* Row.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Row.swift; sourceTree = "<group>"; };
 		0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingButtons.swift; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 			children = (
 				0490E21E28CDF0B20061FBF3 /* RootView.swift */,
 				0490E22228CDF1130061FBF3 /* MapView.swift */,
+				040BBAD028D3D02500F8E2F6 /* CanalTitle.swift */,
 				0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */,
 				040BBAB828CFCA8600F8E2F6 /* Feature */,
 				0490E24B28CE54F60061FBF3 /* Extra */,
@@ -171,7 +174,7 @@
 		0490E25228CE77790061FBF3 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				0490E23628CE44DD0061FBF3 /* Canals.json */,
+				040BBAD228D3D2B200F8E2F6 /* Canals.json */,
 				040BBAB228CFAFA200F8E2F6 /* Locks.json */,
 				040BBAB328CFAFA200F8E2F6 /* Weirs.json */,
 			);
@@ -238,7 +241,7 @@
 			files = (
 				040BBAB528CFAFA200F8E2F6 /* Weirs.json in Resources */,
 				0490E1D828CDE86C0061FBF3 /* Assets.xcassets in Resources */,
-				0490E23728CE44DD0061FBF3 /* Canals.json in Resources */,
+				040BBAD328D3D2B200F8E2F6 /* Canals.json in Resources */,
 				040BBAC828D274E600F8E2F6 /* Launch Screen.storyboard in Resources */,
 				040BBAB428CFAFA200F8E2F6 /* Locks.json in Resources */,
 			);
@@ -272,6 +275,7 @@
 				0490E24D28CE55070061FBF3 /* Row.swift in Sources */,
 				040BBAB728CFC65A00F8E2F6 /* Haptics.swift in Sources */,
 				0490E25828CE77DF0061FBF3 /* Feature.swift in Sources */,
+				040BBAD128D3D02500F8E2F6 /* CanalTitle.swift in Sources */,
 				0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -13,8 +13,9 @@ struct SearchBar: UIViewRepresentable {
     func makeUIView(context: Context) -> UISearchBar {
         let searchBar = UISearchBar()
         searchBar.delegate = vm
+        vm.searchBar = searchBar
         
-        searchBar.placeholder = "Locations, Features, Canals"
+        searchBar.placeholder = "Canals, Features, Locations"
         searchBar.backgroundImage = UIImage()
         searchBar.autocorrectionType = .no
         searchBar.textContentType = .location
