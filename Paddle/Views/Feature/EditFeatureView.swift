@@ -8,44 +8,44 @@
 import SwiftUI
 import CoreLocation
 
-struct FeatureView: View {
+struct EditFeatureView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var vm: ViewModel
     @State var showConfirmation = false
     
-    @StateObject var featureVM: FeatureVM
+    @StateObject var editFeatureVM: EditFeatureVM
     
     var body: some View {
         NavigationView {
             ScrollViewReader { scrollView in
                 Form {
                     Section {
-                        TextField("Name", text: $featureVM.name)
+                        TextField("Name", text: $editFeatureVM.name)
                             .disableAutocorrection(true)
                             .submitLabel(.done)
-                        Picker("Type", selection: $featureVM.type) {
+                        Picker("Type", selection: $editFeatureVM.type) {
                             ForEach(FeatureType.allCases, id: \.self) { type in
                                 FeatureTypeRow(type)
                             }
                         }
-                        if featureVM.type == .lock {
+                        if editFeatureVM.type == .lock {
                             HStack {
                                 Text("Direction")
-                                Slider(value: $featureVM.angle, in: -360...360)
+                                Slider(value: $editFeatureVM.angle, in: -360...360)
                             }
                         }
                     } header: {
                         ZStack {
-                            MapBox(featureVM: featureVM)
-                            if featureVM.type == .lock {
+                            MapBox(editFeatureVM: editFeatureVM)
+                            if editFeatureVM.type == .lock {
                                 Image(systemName: "chevron.left")
                                     .font(.title.weight(.semibold))
-                                    .rotationEffect(.degrees(featureVM.angle))
+                                    .rotationEffect(.degrees(editFeatureVM.angle))
                                     .foregroundColor(.white)
                             } else {
                                 Circle()
                                     .frame(width: SIZE/2, height: SIZE/2)
-                                    .foregroundColor(featureVM.type.color)
+                                    .foregroundColor(editFeatureVM.type.color)
                             }
                         }
                         .aspectRatio(1, contentMode: .fill)
@@ -59,7 +59,7 @@ struct FeatureView: View {
                         .listRowBackground(Color.accentColor)
                 }
             }
-            .navigationTitle(featureVM.feature == nil ? "New Feature" : "Edit Feature")
+            .navigationTitle(editFeatureVM.feature == nil ? "New Feature" : "Edit Feature")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -68,7 +68,7 @@ struct FeatureView: View {
                     }
                 }
                 ToolbarItem(placement: .destructiveAction) {
-                    if let feature = featureVM.feature {
+                    if let feature = editFeatureVM.feature {
                         Button("Delete", role: .destructive) {
                             showConfirmation = true
                         }
@@ -83,21 +83,22 @@ struct FeatureView: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     func submit() {
         let feature: Feature
-        if let existingFeature = featureVM.feature {
+        if let existingFeature = editFeatureVM.feature {
             feature = existingFeature
         } else {
             feature = Feature(context: vm.container.viewContext)
             feature.id = UUID().uuidString
         }
-        feature.coord = [featureVM.coord.latitude, featureVM.coord.longitude]
-        feature.name = featureVM.name
-        feature.type = featureVM.type
+        feature.coord = [editFeatureVM.coord.latitude, editFeatureVM.coord.longitude]
+        feature.name = editFeatureVM.name
+        feature.type = editFeatureVM.type
         if feature.type == .lock {
-            feature.angle = featureVM.angle
+            feature.angle = editFeatureVM.angle
         }
         vm.save()
         

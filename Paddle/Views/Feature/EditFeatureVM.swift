@@ -9,7 +9,7 @@ import Foundation
 import CoreLocation
 import MapKit
 
-class FeatureVM: NSObject, ObservableObject {
+class EditFeatureVM: NSObject, ObservableObject {
     @Published var type: FeatureType
     @Published var name: String
     @Published var angle: Double
@@ -27,7 +27,7 @@ class FeatureVM: NSObject, ObservableObject {
 }
 
 // MARK: - MKMapView Delegate
-extension FeatureVM: MKMapViewDelegate {
+extension EditFeatureVM: MKMapViewDelegate {
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
         coord = mapView.region.center
     }

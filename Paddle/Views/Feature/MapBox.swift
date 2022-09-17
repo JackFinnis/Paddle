@@ -9,15 +9,15 @@ import SwiftUI
 import MapKit
 
 struct MapBox: UIViewRepresentable {
-    @ObservedObject var featureVM: FeatureVM
+    @ObservedObject var editFeatureVM: EditFeatureVM
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
-        mapView.delegate = featureVM
+        mapView.delegate = editFeatureVM
         
         let spanDelta = 0.00054
         let span = MKCoordinateSpan(latitudeDelta: spanDelta, longitudeDelta: spanDelta)
-        let region = MKCoordinateRegion(center: featureVM.coord, span: span)
+        let region = MKCoordinateRegion(center: editFeatureVM.coord, span: span)
         mapView.region = region
         
         mapView.mapType = .hybrid

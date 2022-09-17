@@ -13,22 +13,75 @@ struct FloatingButtons: View {
     
     @State var degrees = 0.0
     @State var scale = 1.0
+    @State var offset = 0.0
     
     var background: Material { colorScheme == .light ? .regularMaterial : .thickMaterial }
     
+    var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if value.translation.height > 0 {
+                    offset = value.translation.height
+                }
+            }
+            .onEnded { value in
+                if value.translation.height > 20 {
+                    vm.stopMeasuring()
+                    vm.stopSearching()
+                }
+                withAnimation {
+                    offset = 0
+                }
+            }
+    }
+    
     var body: some View {
         HStack {
-            if vm.isSearching {
+            if vm.isMeasuring {
+                HStack(spacing: 0) {
+                    VStack(alignment: .leading) {
+                        if let distance = vm.distance {
+                            Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .wide)) + " • " + vm.time)
+                                .font(.headline)
+                            Text("Tap on a pin to reposition it")
+                                .font(.subheadline)
+                        } else {
+                            Text("Measure your trip length")
+                                .font(.headline)
+                            Text("Tap on the start and end locations")
+                                .font(.subheadline)
+                        }
+                    }
+                    .padding(.horizontal)
+                    Spacer()
+                    
+                    Divider().frame(height: 60)
+                    Button {
+                        vm.stopMeasuring()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .frame(width: SIZE, height: SIZE)
+                    }
+                }
+                .frame(height: 60)
+                .background(background)
+                .cornerRadius(10)
+                .frame(maxWidth: 500)
+                .transition(.move(edge: .bottom))
+                .offset(x: 0, y: offset)
+                .gesture(dragGesture)
+            } else if vm.isSearching {
                 HStack(spacing: 0) {
                     SearchBar()
                     Button("Cancel") {
-                        vm.isSearching = false
+                        vm.stopSearching()
                     }
                     .font(.body)
                     .padding(.trailing, 10)
                 }
                 .background(background)
                 .cornerRadius(10)
+                .frame(maxWidth: 500)
                 .transition(.move(edge: .bottom))
                 .offset(x: vm.noResults ? 20 : 0, y: 0)
                 .onChange(of: vm.noResults) { newValue in
@@ -38,6 +91,8 @@ struct FloatingButtons: View {
                         }
                     }
                 }
+                .offset(x: 0, y: offset)
+                .gesture(dragGesture)
             } else {
                 Group {
                     HStack(spacing: 0) {
@@ -72,14 +127,15 @@ struct FloatingButtons: View {
                                 .frame(width: SIZE, height: SIZE)
                         }
                         .popover(isPresented: $vm.showFeatureView) {
-                            FeatureView(featureVM: FeatureVM(feature: vm.selectedFeature, coordinate: vm.selectedFeature?.coordinate ?? vm.coord))
+                            EditFeatureView(editFeatureVM: EditFeatureVM(feature: vm.selectedFeature, coordinate: vm.selectedFeature?.coordinate ?? vm.coord))
+                                .frame(idealWidth: 400, idealHeight: 700)
                                 .font(nil)
                         }
                         
                         Divider().frame(height: SIZE)
                         
                         Button {
-                            //todo
+                            vm.isMeasuring = true
                         } label: {
                             Image(systemName: "ruler")
                                 .frame(width: SIZE, height: SIZE)
@@ -105,6 +161,7 @@ struct FloatingButtons: View {
         .shadow(color: Color(UIColor.systemFill), radius: 5)
         .padding(10)
         .animation(.default, value: vm.isSearching)
+        .animation(.default, value: vm.isMeasuring)
     }
     
     func updateTrackingMode() {

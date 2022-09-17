@@ -1,5 +1,5 @@
 //
-//  AnnotationView.swift
+//  FeatureView.swift
 //  Paddle
 //
 //  Created by Jack Finnis on 13/09/2022.
@@ -8,7 +8,7 @@
 import MapKit
 import UIKit
 
-class AnnotationView: MKAnnotationView {
+class FeatureView: MKAnnotationView {
     var imageView = UIImageView()
     
     override func prepareForDisplay() {

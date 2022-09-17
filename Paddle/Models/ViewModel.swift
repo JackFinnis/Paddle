@@ -14,27 +14,47 @@ class ViewModel: NSObject, ObservableObject {
     var selectedFeature: Feature?
     @Published var showFeatureView = false { didSet {
         if showFeatureView {
-            isSearching = false
+            stopSearching()
+            stopMeasuring()
         } else {
             selectedFeature = nil
         }
     }}
     
     var canals = [Canal]()
-    @Published var selectedCanalName: String?
-    var selectedCanals: [Canal] {
-        guard let name = selectedCanalName else { return [] }
-        return canals.filter { $0.name == name }
-    }
+    var selectedCanals = [Canal]()
+    @Published var selectedCanalName: String? { didSet {
+        mapView?.removeOverlays(selectedCanals)
+        selectedCanals = canals.filter { $0.name == selectedCanalName }
+        mapView?.addOverlays(selectedCanals)
+        
+        UIView.animate(withDuration: 0.35) {
+            let padding = UIEdgeInsets(top: self.selectedCanalName == nil ? 0 : 50, left: 0, bottom: 0, right: 0)
+            self.mapView?.layoutMargins = padding
+        }
+    }}
     
     // Search Bar
     var searchBar: UISearchBar?
     var search: MKLocalSearch?
-    var searchResults = [MKPointAnnotation]()
+    var searchResults = [Annotation]()
     @Published var noResults = false
-    @Published var isSearching = false { didSet {
-        resetSearch()
-    }}
+    @Published var isSearching = false
+    
+    // Measure distance
+    @Published var annotations = [Annotation]()
+    @Published var isMeasuring = false
+    @Published var distance: Double?
+    let speed = 1.5
+    var time: String {
+        guard let distance = distance else { return "" }
+        let time = distance / speed
+        
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute]
+        formatter.unitsStyle = .brief
+        return formatter.string(from: time) ?? ""
+    }
     
     // Map View
     var zoomedIn = false
@@ -157,22 +177,47 @@ extension ViewModel: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if let feature = annotation as? Feature {
-            return mapView.dequeueReusableAnnotationView(withIdentifier: AnnotationView.id, for: feature)
-        } else if let searchResult = annotation as? MKPointAnnotation {
-            let view = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: searchResult)
-            view.clusteringIdentifier = MKMarkerAnnotationView.id
-            return view
+            return mapView.dequeueReusableAnnotationView(withIdentifier: FeatureView.id, for: feature)
+        } else if let annotation = annotation as? Annotation {
+            if annotation.type == .search {
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: annotation) as? MKMarkerAnnotationView
+                view?.clusteringIdentifier = MKMarkerAnnotationView.id
+                view?.animatesWhenAdded = true
+                return view
+            } else if annotation.type == .measure {
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: MKPinAnnotationView.id, for: annotation) as? MKPinAnnotationView
+                view?.displayPriority = .required
+                view?.animatesDrop = true
+                return view
+            }
         }
         return nil
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        guard let coord = view.annotation?.coordinate else { return }
-        
-        if view.annotation is MKUserLocation {
-            mapView.deselectAnnotation(view.annotation, animated: false)
-            self.coord = coord
+        if let user = view.annotation as? MKUserLocation {
+            mapView.deselectAnnotation(user, animated: false)
+            self.coord = user.coordinate
             showFeatureView = true
+        } else if let cluster = view.annotation as? MKClusterAnnotation {
+            zoomTo(cluster.memberAnnotations)
+        }
+    }
+    
+    func zoomTo(_ annotations: [MKAnnotation]) {
+        var zoomRect: MKMapRect?
+        for annotation in annotations {
+            let point = MKMapPoint(annotation.coordinate)
+            let rect = MKMapRect(origin: point, size: MKMapSize(width: 0.1, height: 0.1))
+            if let oldZoomRect = zoomRect {
+                zoomRect = oldZoomRect.union(rect)
+            } else {
+                zoomRect = rect
+            }
+        }
+        if let zoomRect = zoomRect {
+            let padding = UIEdgeInsets(top: 50, left: 50, bottom: 100, right: 50)
+            mapView?.setVisibleMapRect(zoomRect, edgePadding: padding, animated: true)
         }
     }
     
@@ -229,7 +274,42 @@ extension ViewModel: MKMapViewDelegate {
         guard let mapView = mapView else { return }
         let tapPoint = tap.location(in: mapView)
         let tapCoord = mapView.convert(tapPoint, toCoordinateFrom: mapView)
-        selectClosestCanal(to: tapCoord)
+        
+        if isMeasuring {
+            newCoord(tapCoord)
+        } else {
+            selectClosestCanal(to: tapCoord)
+        }
+    }
+    
+    func newCoord(_ coord: CLLocationCoordinate2D) {
+        for annotation in annotations where annotation.coordinate.distance(to: coord) < 500 {
+            mapView?.removeAnnotation(annotation)
+            annotations.removeAll { $0.coordinate == annotation.coordinate }
+            distance = nil
+            return
+        }
+        
+        if annotations.count < 2 {
+            let annotation = Annotation(type: .measure, title: nil, subtitle: nil, coordinate: coord)
+            annotations.append(annotation)
+            mapView?.addAnnotation(annotation)
+            
+            if annotations.count == 2 {
+                calculateDistance(from: annotations[0].coordinate, to: annotations[1].coordinate)
+            }
+        }
+    }
+    
+    func stopMeasuring() {
+        mapView?.removeAnnotations(annotations)
+        annotations = []
+        isMeasuring = false
+    }
+    
+    func calculateDistance(from startCoord: CLLocationCoordinate2D, to endCoord: CLLocationCoordinate2D) {
+        //todo
+        distance = 12345
     }
     
     func selectClosestCanal(to targetCoord: CLLocationCoordinate2D) {
@@ -269,8 +349,12 @@ extension ViewModel: UISearchBarDelegate {
         }
     }
     
+    func stopSearching() {
+        isSearching = false
+        resetSearch()
+    }
+    
     func resetSearch() {
-        selectedCanalName = nil
         mapView?.removeAnnotations(searchResults)
         searchResults = []
     }
@@ -306,8 +390,8 @@ extension ViewModel: UISearchBarDelegate {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = text
         // Set request region to the UK
-        let centre = CLLocationCoordinate2D(latitude: 54.093409, longitude: -2.89479)
-        let span = MKCoordinateSpan(latitudeDelta: 14.83, longitudeDelta: 12.22)
+        let centre = CLLocationCoordinate2D(latitude: 54.5, longitude: -3)
+        let span = MKCoordinateSpan(latitudeDelta: 4.5, longitudeDelta: 5)
         let region = MKCoordinateRegion(center: centre, span: span)
         request.region = region
         
@@ -315,16 +399,16 @@ extension ViewModel: UISearchBarDelegate {
         search = MKLocalSearch(request: request)
         search?.start { response, error in
             guard let response = response else { completion(false); return }
-            self.searchResults = response.mapItems.map { item -> MKPointAnnotation in
-                let annotation = MKPointAnnotation()
-                annotation.coordinate = item.placemark.coordinate
-                annotation.title = item.name
-                annotation.subtitle = item.placemark.title
-                return annotation
+            let filteredResults = response.mapItems.filter { $0.placemark.countryCode == "GB" }
+            guard filteredResults.isNotEmpty else { completion(false); return }
+            
+            self.searchResults = response.mapItems.map { item in
+                Annotation(type: .search, title: item.name, subtitle: item.placemark.title, coordinate: item.placemark.coordinate)
             }
             DispatchQueue.main.async {
                 self.mapView?.addAnnotations(self.searchResults)
                 self.mapView?.setRegion(response.boundingRegion, animated: true)
+                self.selectClosestCanal(to: response.boundingRegion.center)
                 completion(true)
             }
         }
