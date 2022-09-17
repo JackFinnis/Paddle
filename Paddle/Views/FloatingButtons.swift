@@ -25,12 +25,10 @@ struct FloatingButtons: View {
                 }
             }
             .onEnded { value in
-                if value.translation.height > 20 {
+                offset = 0
+                if value.predictedEndTranslation.height > 20 {
                     vm.stopMeasuring()
                     vm.stopSearching()
-                }
-                withAnimation {
-                    offset = 0
                 }
             }
     }
@@ -69,6 +67,7 @@ struct FloatingButtons: View {
                 .frame(maxWidth: 500)
                 .transition(.move(edge: .bottom))
                 .offset(x: 0, y: offset)
+                .offset(x: vm.noResults ? 20 : 0, y: 0)
                 .gesture(dragGesture)
             } else if vm.isSearching {
                 HStack(spacing: 0) {
@@ -84,13 +83,6 @@ struct FloatingButtons: View {
                 .frame(maxWidth: 500)
                 .transition(.move(edge: .bottom))
                 .offset(x: vm.noResults ? 20 : 0, y: 0)
-                .onChange(of: vm.noResults) { newValue in
-                    if newValue {
-                        withAnimation(Animation.spring(response: 0.2, dampingFraction: 0.2, blendDuration: 0.2)) {
-                            vm.noResults = false
-                        }
-                    }
-                }
                 .offset(x: 0, y: offset)
                 .gesture(dragGesture)
             } else {
@@ -162,6 +154,14 @@ struct FloatingButtons: View {
         .padding(10)
         .animation(.default, value: vm.isSearching)
         .animation(.default, value: vm.isMeasuring)
+        .onChange(of: vm.noResults) { newValue in
+            if newValue {
+                Haptics.error()
+                withAnimation(Animation.spring(response: 0.2, dampingFraction: 0.2, blendDuration: 0.2)) {
+                    vm.noResults = false
+                }
+            }
+        }
     }
     
     func updateTrackingMode() {

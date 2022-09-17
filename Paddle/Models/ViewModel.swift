@@ -45,6 +45,7 @@ class ViewModel: NSObject, ObservableObject {
     @Published var annotations = [Annotation]()
     @Published var isMeasuring = false
     @Published var distance: Double?
+    var polyline = MKPolyline()
     let speed = 1.5
     var time: String {
         guard let distance = distance else { return "" }
@@ -52,7 +53,7 @@ class ViewModel: NSObject, ObservableObject {
         
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute]
-        formatter.unitsStyle = .brief
+        formatter.unitsStyle = .short
         return formatter.string(from: time) ?? ""
     }
     
@@ -166,6 +167,11 @@ extension ViewModel: MKMapViewDelegate {
             renderer.lineWidth = 2
             renderer.strokeColor = UIColor(.accentColor)
             return renderer
+        } else if let polyline = overlay as? MKPolyline {
+            let renderer = MKPolylineRenderer(polyline: polyline)
+            renderer.lineWidth = 3
+            renderer.strokeColor = UIColor(.red)
+            return renderer
         }
         
         return MKOverlayRenderer(overlay: overlay)
@@ -180,15 +186,15 @@ extension ViewModel: MKMapViewDelegate {
             return mapView.dequeueReusableAnnotationView(withIdentifier: FeatureView.id, for: feature)
         } else if let annotation = annotation as? Annotation {
             if annotation.type == .search {
-                let view = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: annotation) as? MKMarkerAnnotationView
-                view?.clusteringIdentifier = MKMarkerAnnotationView.id
-                view?.animatesWhenAdded = true
-                return view
+                let marker = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: annotation) as? MKMarkerAnnotationView
+                marker?.clusteringIdentifier = MKMarkerAnnotationView.id
+                marker?.animatesWhenAdded = true
+                return marker
             } else if annotation.type == .measure {
-                let view = mapView.dequeueReusableAnnotationView(withIdentifier: MKPinAnnotationView.id, for: annotation) as? MKPinAnnotationView
-                view?.displayPriority = .required
-                view?.animatesDrop = true
-                return view
+                let pin = mapView.dequeueReusableAnnotationView(withIdentifier: MKPinAnnotationView.id, for: annotation) as? MKPinAnnotationView
+                pin?.displayPriority = .required
+                pin?.animatesDrop = true
+                return pin
             }
         }
         return nil
@@ -286,7 +292,7 @@ extension ViewModel: MKMapViewDelegate {
         for annotation in annotations where annotation.coordinate.distance(to: coord) < 500 {
             mapView?.removeAnnotation(annotation)
             annotations.removeAll { $0.coordinate == annotation.coordinate }
-            distance = nil
+            resetMeasuring()
             return
         }
         
@@ -305,21 +311,40 @@ extension ViewModel: MKMapViewDelegate {
         mapView?.removeAnnotations(annotations)
         annotations = []
         isMeasuring = false
+        resetMeasuring()
     }
     
-    func calculateDistance(from startCoord: CLLocationCoordinate2D, to endCoord: CLLocationCoordinate2D) {
-        //todo
-        distance = 12345
+    func resetMeasuring() {
+        distance = nil
+        mapView?.removeOverlay(polyline)
     }
     
-    func selectClosestCanal(to targetCoord: CLLocationCoordinate2D) {
+    func calculateDistance(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) {
+        guard let (startCoord, startPolyline) = getClosestCoordPolyline(to: start),
+              let (endCoord, endPolyline) = getClosestCoordPolyline(to: end),
+              startPolyline == endPolyline,
+              let startIndex = startPolyline.coordinates.firstIndex(of: startCoord),
+              let endIndex = startPolyline.coordinates.firstIndex(of: endCoord)
+        else { noResults = true; return }
+        
+        let min = min(startIndex, endIndex)
+        let max = max(startIndex, endIndex)
+        let coords = Array(startPolyline.coordinates[min...max])
+        
+        polyline = MKPolyline(coordinates: coords, count: coords.count)
+        mapView?.addOverlay(polyline)
+        distance = coords.getDistance()
+    }
+    
+    func getClosestCoordPolyline(to targetCoord: CLLocationCoordinate2D, skipEvery: Int = 1) -> (CLLocationCoordinate2D, Canal)? {
         var shortestDistance = Double.infinity
         var closestCanal: Canal?
+        var closestCoord: CLLocationCoordinate2D?
         
         for canal in canals {
             // Only check every 5 coords
             let filteredCoords = canal.coordinates.enumerated().compactMap { index, element in
-                index % 5 == 0 ? element : nil
+                index % skipEvery == 0 ? element : nil
             }
             
             for coord in filteredCoords {
@@ -327,11 +352,21 @@ extension ViewModel: MKMapViewDelegate {
                 
                 if delta < shortestDistance && delta < 1000 {
                     shortestDistance = delta
+                    closestCoord = coord
                     closestCanal = canal
                 }
             }
         }
         
+        if let closestCanal = closestCanal, let closestCoord = closestCoord {
+            return (closestCoord, closestCanal)
+        } else {
+            return nil
+        }
+    }
+    
+    func selectClosestCanal(to coord: CLLocationCoordinate2D) {
+        let (_, closestCanal) = getClosestCoordPolyline(to: coord, skipEvery: 5) ?? (nil, nil)
         selectedCanalName = closestCanal?.name
     }
 }
@@ -343,7 +378,6 @@ extension ViewModel: UISearchBarDelegate {
             if success {
                 searchBar.resignFirstResponder()
             } else {
-                Haptics.error()
                 self.noResults = true
             }
         }
@@ -351,17 +385,17 @@ extension ViewModel: UISearchBarDelegate {
     
     func stopSearching() {
         isSearching = false
-        resetSearch()
+        resetSearching()
     }
     
-    func resetSearch() {
+    func resetSearching() {
         mapView?.removeAnnotations(searchResults)
         searchResults = []
     }
     
     // Return whether a result is found
     func search(text: String, completion: @escaping (Bool) -> Void) {
-        resetSearch()
+        resetSearching()
         
         // Search canals
         for canal in canals where canal.name.localizedCaseInsensitiveContains(text) {
@@ -408,7 +442,7 @@ extension ViewModel: UISearchBarDelegate {
             DispatchQueue.main.async {
                 self.mapView?.addAnnotations(self.searchResults)
                 self.mapView?.setRegion(response.boundingRegion, animated: true)
-                self.selectClosestCanal(to: response.boundingRegion.center)
+                self.selectClosestCanal(to: response.mapItems.first?.placemark.coordinate ?? response.boundingRegion.center)
                 completion(true)
             }
         }

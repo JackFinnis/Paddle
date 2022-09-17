@@ -21,3 +21,17 @@ extension CLLocationCoordinate2D: Equatable {
         CLLocation(latitude: latitude, longitude: longitude)
     }
 }
+
+extension Array where Element == CLLocationCoordinate2D {
+    func getDistance() -> Double {
+        var distance = Double.zero
+        
+        for i in 0..<count-1 {
+            let coord = self[i]
+            let nextCoord = self[i+1]
+            distance += coord.distance(to: nextCoord)
+        }
+        
+        return distance
+    }
+}
