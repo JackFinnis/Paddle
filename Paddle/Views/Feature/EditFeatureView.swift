@@ -94,7 +94,8 @@ struct EditFeatureView: View {
             feature = Feature(context: vm.container.viewContext)
             feature.id = UUID().uuidString
         }
-        feature.coord = [editFeatureVM.coord.latitude, editFeatureVM.coord.longitude]
+        feature.lat = editFeatureVM.coord.latitude
+        feature.long = editFeatureVM.coord.longitude
         feature.name = editFeatureVM.name
         feature.type = editFeatureVM.type
         if feature.type == .lock {

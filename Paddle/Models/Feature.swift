@@ -10,10 +10,11 @@ import MapKit
 import SwiftUI
 import CoreData
 
-@objc(Feature)
+@objc
 class Feature: NSManagedObject {
     @NSManaged var type: FeatureType
-    @NSManaged var coord: [Double]
+    @NSManaged var lat: Double
+    @NSManaged var long: Double
     @NSManaged var name: String
     @NSManaged var angle: Double
     @NSManaged var id: String
@@ -22,7 +23,7 @@ class Feature: NSManagedObject {
 extension Feature: MKAnnotation {
     var title: String? { name.isEmpty ? type.name : name }
     var subtitle: String? { name.isEmpty ? "" : type.name }
-    var coordinate: CLLocationCoordinate2D { .init(latitude: coord[0], longitude: coord[1]) }
+    var coordinate: CLLocationCoordinate2D { .init(latitude: lat, longitude: long) }
 }
 
 @objc

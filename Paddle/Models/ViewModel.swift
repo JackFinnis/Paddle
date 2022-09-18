@@ -42,14 +42,16 @@ class ViewModel: NSObject, ObservableObject {
     @Published var isSearching = false
     
     // Measure distance
+    var polyline = MKPolyline()
     @Published var annotations = [Annotation]()
     @Published var isMeasuring = false
     @Published var distance: Double?
-    var polyline = MKPolyline()
-    let speed = 1.5
+    @Published var speed = Speed(rawValue: UserDefaults.standard.integer(forKey: "speed")) ?? .medium { didSet {
+        UserDefaults.standard.set(speed.rawValue, forKey: "speed")
+    }}
     var time: String {
         guard let distance = distance else { return "" }
-        let time = distance / speed
+        let time = distance / speed.speed
         
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute]
@@ -134,8 +136,8 @@ class ViewModel: NSObject, ObservableObject {
                 feature.angle = featureData.angle ?? 0
                 feature.name = featureData.name
                 feature.type = FeatureType(string: featureData.type) ?? .feature
-                debugPrint((FeatureType(string: featureData.type) ?? .feature).rawValue)
-                feature.coord = featureData.coord
+                feature.lat = featureData.coord[0]
+                feature.long = featureData.coord[1]
                 features.append(feature)
             }
             save()
@@ -207,6 +209,8 @@ extension ViewModel: MKMapViewDelegate {
             showFeatureView = true
         } else if let cluster = view.annotation as? MKClusterAnnotation {
             zoomTo(cluster.memberAnnotations)
+        } else if isMeasuring {
+            mapView.deselectAnnotation(view.annotation, animated: false)
         }
     }
     
@@ -320,28 +324,68 @@ extension ViewModel: MKMapViewDelegate {
     }
     
     func calculateDistance(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) {
-        guard let (startCoord, startPolyline) = getClosestCoordPolyline(to: start),
-              let (endCoord, endPolyline) = getClosestCoordPolyline(to: end),
-              startPolyline == endPolyline,
-              let startIndex = startPolyline.coordinates.firstIndex(of: startCoord),
-              let endIndex = startPolyline.coordinates.firstIndex(of: endCoord)
-        else { noResults = true; return }
+        func fail() { noResults = true }
+        
+        guard let (startCoord, startCanal) = getClosestCoordCanal(to: start) else { fail(); return }
+        selectedCanalName = startCanal.name
+        guard let (endCoord, endCanal) = getClosestCoordCanal(to: end, outOf: selectedCanals) else { fail(); return }
+        
+        print(startCanal.name)
+        print(endCanal.name)
+        
+        // Need to get a list of all the coords along this line
+        var coordinates = [CLLocationCoordinate2D]()
+        coordinates.append(contentsOf: startCanal.coordinates)
+        var canals = [Canal]()
+        canals.append(contentsOf: selectedCanals)
+        canals.removeAll { $0 == startCanal }
+        var changesMade = true
+        
+        while changesMade {
+            changesMade = false
+            for canal in canals {
+                let coords = canal.coordinates
+                if coords.first == coordinates.first {
+                    coordinates.reverse()
+                    coordinates.append(contentsOf: coords)
+                    changesMade = true
+                    canals.removeAll { $0 == canal }
+                } else if coords.first == coordinates.last {
+                    coordinates.append(contentsOf: coords)
+                    changesMade = true
+                    canals.removeAll { $0 == canal }
+                } else if coords.last == coordinates.first {
+                    coordinates.insert(contentsOf: coords, at: 0)
+                    changesMade = true
+                    canals.removeAll { $0 == canal }
+                } else if coords.last ==  coordinates.last {
+                    coordinates.reverse()
+                    coordinates.insert(contentsOf: coords, at: 0)
+                    changesMade = true
+                    canals.removeAll { $0 == canal }
+                }
+            }
+        }
+        
+        guard let startIndex = coordinates.firstIndex(of: startCoord),
+              let endIndex = coordinates.firstIndex(of: endCoord)
+        else { fail(); return }
         
         let min = min(startIndex, endIndex)
         let max = max(startIndex, endIndex)
-        let coords = Array(startPolyline.coordinates[min...max])
+        let coords = Array(coordinates[min...max])
         
         polyline = MKPolyline(coordinates: coords, count: coords.count)
         mapView?.addOverlay(polyline)
         distance = coords.getDistance()
     }
     
-    func getClosestCoordPolyline(to targetCoord: CLLocationCoordinate2D, skipEvery: Int = 1) -> (CLLocationCoordinate2D, Canal)? {
+    func getClosestCoordCanal(to targetCoord: CLLocationCoordinate2D, outOf canals: [Canal]? = nil, skipEvery: Int = 1) -> (CLLocationCoordinate2D, Canal)? {
         var shortestDistance = Double.infinity
         var closestCanal: Canal?
         var closestCoord: CLLocationCoordinate2D?
         
-        for canal in canals {
+        for canal in canals ?? self.canals {
             // Only check every 5 coords
             let filteredCoords = canal.coordinates.enumerated().compactMap { index, element in
                 index % skipEvery == 0 ? element : nil
@@ -366,7 +410,7 @@ extension ViewModel: MKMapViewDelegate {
     }
     
     func selectClosestCanal(to coord: CLLocationCoordinate2D) {
-        let (_, closestCanal) = getClosestCoordPolyline(to: coord, skipEvery: 5) ?? (nil, nil)
+        let (_, closestCanal) = getClosestCoordCanal(to: coord, skipEvery: 5) ?? (nil, nil)
         selectedCanalName = closestCanal?.name
     }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct FloatingButtons: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var vm: ViewModel
+    @State var showInfoView = false
     
     @State var degrees = 0.0
     @State var scale = 1.0
@@ -37,10 +38,24 @@ struct FloatingButtons: View {
         HStack {
             if vm.isMeasuring {
                 HStack(spacing: 0) {
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 0) {
                         if let distance = vm.distance {
-                            Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .wide)) + " • " + vm.time)
-                                .font(.headline)
+                            HStack(spacing: 0) {
+                                Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .wide)) + " • ")
+                                    .font(.headline)
+                                Menu {
+                                    Picker("Speed", selection: $vm.speed) {
+                                        ForEach(Speed.sorted, id: \.self) { speed in
+                                            Label(speed.name, systemImage: speed.image)
+                                        }
+                                    }
+                                } label: {
+                                    Text(vm.time)
+                                        .font(.headline)
+                                        .animation(.none, value: vm.time)
+                                }
+                            }
+                            
                             Text("Tap on a pin to reposition it")
                                 .font(.subheadline)
                         } else {
@@ -88,6 +103,20 @@ struct FloatingButtons: View {
             } else {
                 Group {
                     HStack(spacing: 0) {
+                        Button {
+                            showInfoView = true
+                        } label: {
+                            Image(systemName: showInfoView ? "info.circle.fill" : "info.circle")
+                                .frame(width: SIZE, height: SIZE)
+                        }
+                        .popover(isPresented: $showInfoView) {
+                            InfoView()
+                                .frame(idealWidth: 400, idealHeight: 700)
+                                .font(nil)
+                        }
+                        
+                        Divider().frame(height: SIZE)
+                        
                         Button {
                             updateMapType()
                         } label: {

@@ -22,6 +22,8 @@
 		040BBACD28D28A8100F8E2F6 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBACC28D28A8100F8E2F6 /* SearchBar.swift */; };
 		040BBAD128D3D02500F8E2F6 /* CanalTitle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 040BBAD028D3D02500F8E2F6 /* CanalTitle.swift */; };
 		040BBAD328D3D2B200F8E2F6 /* Canals.json in Resources */ = {isa = PBXBuildFile; fileRef = 040BBAD228D3D2B200F8E2F6 /* Canals.json */; };
+		041A58B128D73D0A0056D79C /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041A58B028D73D0A0056D79C /* InfoView.swift */; };
+		041A58B428D73D2D0056D79C /* ShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041A58B328D73D2D0056D79C /* ShareView.swift */; };
 		0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */; };
 		0490E1D828CDE86C0061FBF3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0490E1D728CDE86C0061FBF3 /* Assets.xcassets */; };
 		0490E21F28CDF0B20061FBF3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E21E28CDF0B20061FBF3 /* RootView.swift */; };
@@ -36,6 +38,7 @@
 		0490E25828CE77DF0061FBF3 /* Feature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E25728CE77DF0061FBF3 /* Feature.swift */; };
 		0490E26028CE7F140061FBF3 /* NSObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E25F28CE7F140061FBF3 /* NSObject.swift */; };
 		04E885FC28D5233400493649 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E885FB28D5233400493649 /* Annotation.swift */; };
+		04E885FE28D5C55000493649 /* Speed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E885FD28D5C55000493649 /* Speed.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +58,8 @@
 		040BBACC28D28A8100F8E2F6 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		040BBAD028D3D02500F8E2F6 /* CanalTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanalTitle.swift; sourceTree = "<group>"; };
 		040BBAD228D3D2B200F8E2F6 /* Canals.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Canals.json; sourceTree = "<group>"; };
+		041A58B028D73D0A0056D79C /* InfoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
+		041A58B328D73D2D0056D79C /* ShareView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
 		0490E1D028CDE86B0061FBF3 /* Paddle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paddle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddleApp.swift; sourceTree = "<group>"; };
 		0490E1D728CDE86C0061FBF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -70,6 +75,7 @@
 		0490E25728CE77DF0061FBF3 /* Feature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feature.swift; sourceTree = "<group>"; };
 		0490E25F28CE7F140061FBF3 /* NSObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSObject.swift; sourceTree = "<group>"; };
 		04E885FB28D5233400493649 /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotation.swift; sourceTree = "<group>"; };
+		04E885FD28D5C55000493649 /* Speed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speed.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +98,15 @@
 				040BBABB28CFCA9B00F8E2F6 /* EditFeatureVM.swift */,
 			);
 			path = Feature;
+			sourceTree = "<group>";
+		};
+		041A58B228D73D1A0056D79C /* Info */ = {
+			isa = PBXGroup;
+			children = (
+				041A58B028D73D0A0056D79C /* InfoView.swift */,
+				041A58B328D73D2D0056D79C /* ShareView.swift */,
+			);
+			path = Info;
 			sourceTree = "<group>";
 		};
 		0490E1C728CDE86B0061FBF3 = {
@@ -133,6 +148,7 @@
 				0490E22228CDF1130061FBF3 /* MapView.swift */,
 				040BBAD028D3D02500F8E2F6 /* CanalTitle.swift */,
 				0490E24E28CE585D0061FBF3 /* FloatingButtons.swift */,
+				041A58B228D73D1A0056D79C /* Info */,
 				040BBAB828CFCA8600F8E2F6 /* Feature */,
 				0490E24B28CE54F60061FBF3 /* Extra */,
 			);
@@ -143,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				0490E22028CDF0CB0061FBF3 /* ViewModel.swift */,
+				04E885FD28D5C55000493649 /* Speed.swift */,
 				040BBAB628CFC65A00F8E2F6 /* Haptics.swift */,
 				0490E24928CE52F00061FBF3 /* Canal.swift */,
 				0490E25728CE77DF0061FBF3 /* Feature.swift */,
@@ -260,6 +277,7 @@
 				0490E21F28CDF0B20061FBF3 /* RootView.swift in Sources */,
 				0490E22328CDF1130061FBF3 /* MapView.swift in Sources */,
 				040BBAC428D128D200F8E2F6 /* Blur.swift in Sources */,
+				04E885FE28D5C55000493649 /* Speed.swift in Sources */,
 				0490E22728CDF36D0061FBF3 /* Collection.swift in Sources */,
 				040BBABA28CFCA9200F8E2F6 /* EditFeatureView.swift in Sources */,
 				040BBABC28CFCA9B00F8E2F6 /* EditFeatureVM.swift in Sources */,
@@ -274,11 +292,13 @@
 				0490E24A28CE52F00061FBF3 /* Canal.swift in Sources */,
 				0490E22128CDF0CB0061FBF3 /* ViewModel.swift in Sources */,
 				0490E23128CDFF230061FBF3 /* MKMultiPoint.swift in Sources */,
+				041A58B128D73D0A0056D79C /* InfoView.swift in Sources */,
 				040BBAC028CFD22200F8E2F6 /* FeatureTypeRow.swift in Sources */,
 				0490E24D28CE55070061FBF3 /* Row.swift in Sources */,
 				040BBAB728CFC65A00F8E2F6 /* Haptics.swift in Sources */,
 				0490E25828CE77DF0061FBF3 /* Feature.swift in Sources */,
 				040BBAD128D3D02500F8E2F6 /* CanalTitle.swift in Sources */,
+				041A58B428D73D2D0056D79C /* ShareView.swift in Sources */,
 				04E885FC28D5233400493649 /* Annotation.swift in Sources */,
 				0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */,
 			);

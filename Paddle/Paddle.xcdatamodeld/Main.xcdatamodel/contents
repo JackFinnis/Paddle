@@ -2,12 +2,19 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21G72" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Feature" representedClassName="Feature" syncable="YES">
         <attribute name="angle" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="coord" attributeType="Transformable" valueTransformerName="" customClassName="[Double]"/>
         <attribute name="id" attributeType="String"/>
+        <attribute name="lat" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="long" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="type" attributeType="Integer 16" valueTransformerName="" defaultValueString="0" usesScalarValueType="YES" customClassName="FeatureType"/>
     </entity>
+    <entity name="Polyline" representedClassName="Polyline" syncable="YES">
+        <attribute name="coords" attributeType="Transformable" customClassName="[[Double]]"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
     <elements>
-        <element name="Feature" positionX="-63" positionY="-18" width="128" height="104"/>
+        <element name="Feature" positionX="-63" positionY="-18" width="128" height="119"/>
+        <element name="Polyline" positionX="-63" positionY="27" width="128" height="74"/>
     </elements>
 </model>
