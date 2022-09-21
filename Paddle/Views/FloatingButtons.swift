@@ -68,6 +68,14 @@ struct FloatingButtons: View {
                     .padding(.horizontal)
                     Spacer()
                     
+                    if vm.distance != nil {
+                        Button {
+                            vm.savePolyline()
+                        } label: {
+                            Image(systemName: "checkmark.circle")
+                                .frame(width: SIZE, height: SIZE)
+                        }
+                    }
                     Divider().frame(height: 60)
                     Button {
                         vm.stopMeasuring()
@@ -84,6 +92,11 @@ struct FloatingButtons: View {
                 .offset(x: 0, y: offset)
                 .offset(x: vm.noResults ? 20 : 0, y: 0)
                 .gesture(dragGesture)
+                .onTapGesture {
+                    if vm.distance != nil {
+                        vm.zoomToPolyline()
+                    }
+                }
             } else if vm.isSearching {
                 HStack(spacing: 0) {
                     SearchBar()

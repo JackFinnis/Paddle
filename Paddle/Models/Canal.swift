@@ -10,24 +10,14 @@ import MapKit
 import CoreData
 
 class Canal: MKPolyline {
+    var id = ""
     var name = ""
-    var distance = Double.zero
+    var distance = 0
 }
 
 struct CanalData: Codable {
+    let id: String
     let name: String
-    let dist: Double
+    let dist: Int
     let coords: [[Double]]
-}
-
-@objc
-class Polyline: NSManagedObject {
-    @NSManaged var name: String
-    @NSManaged var coords: [[Double]]
-    @NSManaged var type: PolylineType
-}
-
-@objc
-enum PolylineType: Int16 {
-    case feature
 }

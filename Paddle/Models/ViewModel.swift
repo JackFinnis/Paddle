@@ -23,16 +23,22 @@ class ViewModel: NSObject, ObservableObject {
     
     var canals = [Canal]()
     var selectedCanals = [Canal]()
-    @Published var selectedCanalName: String? { didSet {
+    @Published var selectedCanalId: String? { didSet {
         mapView?.removeOverlays(selectedCanals)
-        selectedCanals = canals.filter { $0.name == selectedCanalName }
+        selectedCanals = canals.filter { $0.id == selectedCanalId }
         mapView?.addOverlays(selectedCanals)
         
+        mapView?.removeOverlays(polylines)
+        mapView?.addOverlays(polylines)
+        
         UIView.animate(withDuration: 0.35) {
-            let padding = UIEdgeInsets(top: self.selectedCanalName == nil ? 0 : 50, left: 0, bottom: 0, right: 0)
+            let padding = UIEdgeInsets(top: self.selectedCanalId == nil ? 0 : 50, left: 0, bottom: 0, right: 0)
             self.mapView?.layoutMargins = padding
         }
     }}
+    
+    // Saved polylines
+    var polylines = [Polyline]()
     
     // Search Bar
     var searchBar: UISearchBar?
@@ -42,7 +48,7 @@ class ViewModel: NSObject, ObservableObject {
     @Published var isSearching = false
     
     // Measure distance
-    var polyline = MKPolyline()
+    var tripPolyline = MKPolyline()
     @Published var annotations = [Annotation]()
     @Published var isMeasuring = false
     @Published var distance: Double?
@@ -83,6 +89,7 @@ class ViewModel: NSObject, ObservableObject {
             if let error = error {
                 print("Core Data failed to load: ", error)
             } else {
+                self.loadPolylines()
                 self.loadFeatures()
             }
         }
@@ -98,6 +105,7 @@ class ViewModel: NSObject, ObservableObject {
                 CLLocationCoordinate2D(latitude: coord[0], longitude: coord[1])
             }
             let canal = Canal(coordinates: coordinates, count: coordinates.count)
+            canal.id = data.id
             canal.name = data.name
             canal.distance = data.dist
             return canal
@@ -106,16 +114,27 @@ class ViewModel: NSObject, ObservableObject {
         mapView?.addOverlay(MKMultiPolyline(canals))
     }
     
+    // Delete all given entities in core data
+    func deleteAll(entityName: String) {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+        do {
+            try container.viewContext.execute(deleteRequest)
+        } catch {
+            debugPrint(error)
+        }
+    }
+    
+    func loadPolylines() {
+//        deleteAll(entityName: "Polyline")
+        
+        polylines = (try? container.viewContext.fetch(Polyline.fetchRequest()) as? [Polyline]) ?? []
+        mapView?.addOverlays(polylines)
+    }
+    
     func loadFeatures() {
-        // Delete all features in core data
-//        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "Feature")
-//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-//
-//        do {
-//            try container.viewContext.execute(deleteRequest)
-//        } catch {
-//            print(error)
-//        }
+//        deleteAll(entityName: "Feature")
         
         features = (try? container.viewContext.fetch(Feature.fetchRequest()) as? [Feature]) ?? []
         
@@ -150,9 +169,16 @@ class ViewModel: NSObject, ObservableObject {
         for annotation in mapView?.selectedAnnotations ?? [] {
             mapView?.deselectAnnotation(annotation, animated: true)
         }
-        
-        let rect = MKMultiPolyline(selectedCanals).boundingMapRect
-        let padding = UIEdgeInsets(top: 20, left: 20, bottom: 80, right: 20)
+        setRect(MKMultiPolyline(selectedCanals).boundingMapRect)
+    }
+    
+    func setRect(_ rect: MKMapRect, extraPadding: Bool = false) {
+        let padding: UIEdgeInsets
+        if extraPadding {
+            padding = UIEdgeInsets(top: 50, left: 50, bottom: 100, right: 50)
+        } else {
+            padding = UIEdgeInsets(top: 20, left: 20, bottom: 80, right: 20)
+        }
         mapView?.setVisibleMapRect(rect, edgePadding: padding, animated: true)
     }
 }
@@ -174,8 +200,12 @@ extension ViewModel: MKMapViewDelegate {
             renderer.lineWidth = 3
             renderer.strokeColor = UIColor(.red)
             return renderer
+        } else if let polyline = overlay as? Polyline {
+            let renderer = MKPolylineRenderer(polyline: polyline.mkPolyline)
+            renderer.lineWidth = 3
+            renderer.strokeColor = UIColor(selectedCanalId == nil ? .green : .yellow)
+            return renderer
         }
-        
         return MKOverlayRenderer(overlay: overlay)
     }
     
@@ -226,8 +256,7 @@ extension ViewModel: MKMapViewDelegate {
             }
         }
         if let zoomRect = zoomRect {
-            let padding = UIEdgeInsets(top: 50, left: 50, bottom: 100, right: 50)
-            mapView?.setVisibleMapRect(zoomRect, edgePadding: padding, animated: true)
+            setRect(zoomRect, extraPadding: true)
         }
     }
     
@@ -320,18 +349,15 @@ extension ViewModel: MKMapViewDelegate {
     
     func resetMeasuring() {
         distance = nil
-        mapView?.removeOverlay(polyline)
+        mapView?.removeOverlay(tripPolyline)
     }
     
     func calculateDistance(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) {
         func fail() { noResults = true }
         
         guard let (startCoord, startCanal) = getClosestCoordCanal(to: start) else { fail(); return }
-        selectedCanalName = startCanal.name
+        selectedCanalId = startCanal.id
         guard let (endCoord, endCanal) = getClosestCoordCanal(to: end, outOf: selectedCanals) else { fail(); return }
-        
-        print(startCanal.name)
-        print(endCanal.name)
         
         // Need to get a list of all the coords along this line
         var coordinates = [CLLocationCoordinate2D]()
@@ -375,9 +401,28 @@ extension ViewModel: MKMapViewDelegate {
         let max = max(startIndex, endIndex)
         let coords = Array(coordinates[min...max])
         
-        polyline = MKPolyline(coordinates: coords, count: coords.count)
-        mapView?.addOverlay(polyline)
+        tripPolyline = MKPolyline(coordinates: coords, count: coords.count)
+        mapView?.addOverlay(tripPolyline)
         distance = coords.getDistance()
+        zoomToPolyline()
+    }
+    
+    func savePolyline() {
+        let polyline = Polyline(context: container.viewContext)
+        polyline.type = .completed
+        polyline.canalId = selectedCanalId ?? ""
+        polyline.coords = tripPolyline.coordinates.map { coord in
+            [coord.latitude, coord.longitude]
+        }
+        
+        save()
+        polylines.append(polyline)
+        mapView?.addOverlay(polyline)
+        stopMeasuring()
+    }
+    
+    func zoomToPolyline() {
+        setRect(tripPolyline.boundingMapRect, extraPadding: true)
     }
     
     func getClosestCoordCanal(to targetCoord: CLLocationCoordinate2D, outOf canals: [Canal]? = nil, skipEvery: Int = 1) -> (CLLocationCoordinate2D, Canal)? {
@@ -411,7 +456,7 @@ extension ViewModel: MKMapViewDelegate {
     
     func selectClosestCanal(to coord: CLLocationCoordinate2D) {
         let (_, closestCanal) = getClosestCoordCanal(to: coord, skipEvery: 5) ?? (nil, nil)
-        selectedCanalName = closestCanal?.name
+        selectedCanalId = closestCanal?.id
     }
 }
 
@@ -443,7 +488,7 @@ extension ViewModel: UISearchBarDelegate {
         
         // Search canals
         for canal in canals where canal.name.localizedCaseInsensitiveContains(text) {
-            selectedCanalName = canal.name
+            selectedCanalId = canal.id
             setSelectedRegion()
             completion(true)
             return

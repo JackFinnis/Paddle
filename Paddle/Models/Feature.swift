@@ -10,7 +10,7 @@ import MapKit
 import SwiftUI
 import CoreData
 
-@objc
+@objc(Feature)
 class Feature: NSManagedObject {
     @NSManaged var type: FeatureType
     @NSManaged var lat: Double

@@ -24,6 +24,7 @@ extension CLLocationCoordinate2D: Equatable {
 
 extension Array where Element == CLLocationCoordinate2D {
     func getDistance() -> Double {
+        guard count >= 2 else { return 0 }
         var distance = Double.zero
         
         for i in 0..<count-1 {

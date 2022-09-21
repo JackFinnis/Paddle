@@ -17,24 +17,26 @@ struct InfoView: View {
             Form {
                 Section {} header: {
                     Text("About Us")
+                } footer: {
+                    Text("Some info...")
                 }
                 
                 Section {
                     Button {
                         showShareSheet = true
                     } label: {
-                        Label("Share UK Waterways", systemImage: "square.and.arrow.up")
+                        Label("Share \(NAME)", systemImage: "square.and.arrow.up")
                     }
                     .sheet(isPresented: $showShareSheet) {
                         ShareView()
                     }
                     
                     Button {
-                        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                             SKStoreReviewController.requestReview(in: scene)
                         }
                     } label: {
-                        Label("Rate UK Waterways", systemImage: "star")
+                        Label("Rate \(NAME)", systemImage: "star")
                     }
                     
                     Button {
@@ -50,7 +52,7 @@ struct InfoView: View {
                     }
                     
                     Button {
-                        let url = URL(string: "mailto:" + EMAIL + "?subject=UK%20Waterways%20Feedback")!
+                        let url = URL(string: "mailto:" + EMAIL + "?subject=\(NAME)%20Feedback")!
                         UIApplication.shared.open(url)
                     } label: {
                         Label("Send Us Feedback", systemImage: "envelope")
@@ -72,7 +74,8 @@ struct InfoView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Text("Done").bold()
+                        Text("Done")
+                            .bold()
                     }
                 }
             }

@@ -14,17 +14,4 @@ extension MKMultiPoint {
         getCoordinates(&coords, range: NSRange(location: 0, length: pointCount))
         return coords
     }
-    
-    func getDistance() -> Double {
-        guard coordinates.count >= 2 else { return 0 }
-        var distance = Double.zero
-        
-        for i in 0..<coordinates.count - 1 {
-            let coord = coordinates[i]
-            let nextCoord = coordinates[i+1]
-            distance += coord.distance(to: nextCoord)
-        }
-        
-        return distance
-    }
 }
