@@ -11,6 +11,7 @@ import CoreData
 import SwiftUI
 
 class ViewModel: NSObject, ObservableObject {
+    // MARK: - Properties
     var features = [Feature]()
     var selectedFeature: Feature?
     @Published var showFeatureView = false { didSet {
@@ -76,7 +77,10 @@ class ViewModel: NSObject, ObservableObject {
         super.init()
         CLLocationManager().requestWhenInUseAuthorization()
     }
-    
+}
+
+// MARK: - Load Data
+extension ViewModel {
     func loadData() {
         loadCanals()
         container.loadPersistentStores { description, error in
@@ -127,16 +131,6 @@ class ViewModel: NSObject, ObservableObject {
         mapView?.addOverlays(polylines)
     }
     
-    func resetPolylines() {
-        mapView?.removeOverlays(polylines)
-        mapView?.addOverlays(polylines)
-    }
-    
-    func deselectPolyline() {
-        selectedPolyline = nil
-        resetPolylines()
-    }
-    
     func loadFeatures() {
 //        deleteAll(entityName: "Feature")
         
@@ -170,81 +164,64 @@ class ViewModel: NSObject, ObservableObject {
     }
 }
 
-extension ViewModel: MKMapViewDelegate {
-    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-        if let canal = overlay as? Canal {
-            let renderer = MKPolylineRenderer(polyline: canal)
-            renderer.lineWidth = 3
-            renderer.strokeColor = UIColor(.orange)
-            return renderer
-        } else if let canals = overlay as? MKMultiPolyline {
-            let renderer = MKMultiPolylineRenderer(multiPolyline: canals)
-            renderer.lineWidth = 2
-            renderer.strokeColor = UIColor(.accentColor)
-            return renderer
-        } else if let polyline = overlay as? MKPolyline {
-            let renderer = MKPolylineRenderer(polyline: polyline)
-            renderer.lineWidth = 3
-            renderer.strokeColor = UIColor(.red)
-            return renderer
-        } else if let polyline = overlay as? Polyline {
-            let renderer = MKPolylineRenderer(polyline: polyline.mkPolyline)
-            renderer.lineWidth = 3
-            let color: Color
-            if selectedPolyline == polyline {
-                color = .red
-            } else if let canalId = selectedCanalId, polyline.canalId == canalId {
-                color = .yellow
-            } else {
-                color = .green
+// MARK: - Saved Polylines
+extension ViewModel {
+    func resetPolylines() {
+        mapView?.removeOverlays(polylines)
+        mapView?.addOverlays(polylines)
+    }
+    
+    func deselectPolyline() {
+        selectedPolyline = nil
+        resetPolylines()
+    }
+    
+    func deletePolyline() {
+        if let polyline = selectedPolyline {
+            polylines.removeAll { $0 == polyline }
+            mapView?.removeOverlay(polyline)
+            
+            container.viewContext.delete(polyline)
+            save()
+            
+            deselectPolyline()
+            Haptics.success()
+        }
+    }
+    
+    func selectClosestPolyline(to targetCoord: CLLocationCoordinate2D, canalId: String) {
+        var shortestDistance = Double.infinity
+        var closestPolyline: Polyline?
+        
+        for polyline in polylines.filter({ $0.canalId == canalId }) {
+            // Only check every 5 coords
+            let filteredCoords = polyline.mkPolyline.coordinates.enumerated().compactMap { index, element in
+                index % 5 == 0 ? element : nil
             }
-            renderer.strokeColor = UIColor(color)
-            return renderer
-        }
-        return MKOverlayRenderer(overlay: overlay)
-    }
-    
-    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
-        coord = mapView.region.center
-    }
-    
-    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        if let feature = annotation as? Feature {
-            return mapView.dequeueReusableAnnotationView(withIdentifier: FeatureView.id, for: feature)
-        } else if let annotation = annotation as? Annotation {
-            if annotation.type == .search {
-                let marker = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: annotation) as? MKMarkerAnnotationView
-                marker?.clusteringIdentifier = MKMarkerAnnotationView.id
-                marker?.displayPriority = .required
-                marker?.animatesWhenAdded = true
-                return marker
-            } else if annotation.type == .measure {
-                let pin = mapView.dequeueReusableAnnotationView(withIdentifier: MKPinAnnotationView.id, for: annotation) as? MKPinAnnotationView
-                pin?.displayPriority = .required
-                pin?.animatesDrop = true
-                return pin
+            
+            for coord in filteredCoords {
+                let delta = targetCoord.distance(to: coord)
+                
+                if delta < shortestDistance && delta < 200 {
+                    shortestDistance = delta
+                    closestPolyline = polyline
+                }
             }
-        } else if let cluster = annotation as? MKClusterAnnotation {
-            let marker = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: cluster) as? MKMarkerAnnotationView
-            marker?.clusteringIdentifier = MKMarkerAnnotationView.id
-            marker?.displayPriority = .required
-            return marker
         }
-        return nil
+        
+        selectedPolyline = closestPolyline
+        resetPolylines()
     }
     
-    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        if let user = view.annotation as? MKUserLocation {
-            mapView.deselectAnnotation(user, animated: false)
-            coord = user.coordinate
-            showFeatureView = true
-        } else if let cluster = view.annotation as? MKClusterAnnotation {
-            zoomTo(cluster.memberAnnotations)
-        } else if isMeasuring {
-            mapView.deselectAnnotation(view.annotation, animated: false)
+    func zoomToSelectedPolyline() {
+        if let polyline = selectedPolyline {
+            setRect(polyline.boundingMapRect, extraPadding: true)
         }
     }
-    
+}
+
+// MARK: - Helper Functions
+extension ViewModel {
     func zoomTo(_ annotations: [MKAnnotation]) {
         var zoomRect: MKMapRect?
         for annotation in annotations {
@@ -267,13 +244,6 @@ extension ViewModel: MKMapViewDelegate {
         mapView?.setRegion(region, animated: animated)
     }
     
-    func setSelectedRegion() {
-        for annotation in mapView?.selectedAnnotations ?? [] {
-            mapView?.deselectAnnotation(annotation, animated: true)
-        }
-        setRect(MKMultiPolyline(selectedCanals).boundingMapRect)
-    }
-    
     func setRect(_ rect: MKMapRect, extraPadding: Bool = false) {
         let padding: UIEdgeInsets
         if extraPadding {
@@ -282,30 +252,6 @@ extension ViewModel: MKMapViewDelegate {
             padding = UIEdgeInsets(top: 20, left: 20, bottom: 80, right: 20)
         }
         mapView?.setVisibleMapRect(rect, edgePadding: padding, animated: true)
-    }
-    
-    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
-        if !zoomedIn {
-            zoomedIn = true
-            mapView.setUserTrackingMode(.follow, animated: false)
-        }
-    }
-    
-    func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
-        if !animated {
-            userTrackingMode = .none
-        }
-    }
-    
-    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        if let feature = view.annotation as? Feature {
-            if control == view.leftCalloutAccessoryView {
-                selectedFeature = feature
-                showFeatureView = true
-            } else {
-                openInMaps(name: feature.title ?? feature.name, coord: feature.coordinate)
-            }
-        }
     }
     
     func openInMaps(name: String, coord: CLLocationCoordinate2D) {
@@ -318,6 +264,50 @@ extension ViewModel: MKMapViewDelegate {
         }
     }
     
+    func getClosestCoordCanal(to targetCoord: CLLocationCoordinate2D, outOf canals: [Canal]? = nil, skipEvery: Int = 1) -> (CLLocationCoordinate2D, Canal)? {
+        var shortestDistance = Double.infinity
+        var closestCanal: Canal?
+        var closestCoord: CLLocationCoordinate2D?
+        
+        for canal in canals ?? self.canals {
+            // Only check every 5 coords
+            let filteredCoords = canal.coordinates.enumerated().compactMap { index, element in
+                index % skipEvery == 0 ? element : nil
+            }
+            
+            for coord in filteredCoords {
+                let delta = targetCoord.distance(to: coord)
+                
+                if delta < shortestDistance && delta < 1000 {
+                    shortestDistance = delta
+                    closestCoord = coord
+                    closestCanal = canal
+                }
+            }
+        }
+        
+        if let closestCanal = closestCanal, let closestCoord = closestCoord {
+            return (closestCoord, closestCanal)
+        } else {
+            return nil
+        }
+    }
+    
+    func selectClosestCanal(to coord: CLLocationCoordinate2D) {
+        let (_, closestCanal) = getClosestCoordCanal(to: coord, skipEvery: 5) ?? (nil, nil)
+        selectedCanalId = closestCanal?.id
+    }
+    
+    func setSelectedRegion() {
+        for annotation in mapView?.selectedAnnotations ?? [] {
+            mapView?.deselectAnnotation(annotation, animated: true)
+        }
+        setRect(MKMultiPolyline(selectedCanals).boundingMapRect)
+    }
+}
+
+// MARK: - Gesture Recogniser
+extension ViewModel {
     @objc
     func handleLongPress(_ tap: UITapGestureRecognizer) {
         guard let mapView = mapView else { return }
@@ -343,7 +333,10 @@ extension ViewModel: MKMapViewDelegate {
             selectClosestCanal(to: tapCoord)
         }
     }
-    
+}
+
+// MARK: - Measuring
+extension ViewModel {
     func newCoord(_ coord: CLLocationCoordinate2D) {
         for annotation in annotations where annotation.coordinate.distance(to: coord) < 500 {
             mapView?.removeAnnotation(annotation)
@@ -442,6 +435,12 @@ extension ViewModel: MKMapViewDelegate {
         zoomToPolyline()
     }
     
+    func zoomToPolyline() {
+        if tripPolyline?.coordinates.isNotEmpty ?? false {
+            setRect(tripPolyline!.boundingMapRect, extraPadding: true)
+        }
+    }
+    
     func savePolyline() {
         let polyline = Polyline(context: container.viewContext)
         polyline.type = .completed
@@ -458,91 +457,110 @@ extension ViewModel: MKMapViewDelegate {
         stopMeasuring()
         Haptics.success()
     }
-    
-    func deletePolyline() {
-        if let polyline = selectedPolyline {
-            polylines.removeAll { $0 == polyline }
-            mapView?.removeOverlay(polyline)
-            
-            container.viewContext.delete(polyline)
-            save()
-            
-            deselectPolyline()
-            Haptics.success()
-        }
-    }
-    
-    func zoomToPolyline() {
-        if tripPolyline?.coordinates.isNotEmpty ?? false {
-            setRect(tripPolyline!.boundingMapRect, extraPadding: true)
-        }
-    }
-    
-    func getClosestCoordCanal(to targetCoord: CLLocationCoordinate2D, outOf canals: [Canal]? = nil, skipEvery: Int = 1) -> (CLLocationCoordinate2D, Canal)? {
-        var shortestDistance = Double.infinity
-        var closestCanal: Canal?
-        var closestCoord: CLLocationCoordinate2D?
-        
-        for canal in canals ?? self.canals {
-            // Only check every 5 coords
-            let filteredCoords = canal.coordinates.enumerated().compactMap { index, element in
-                index % skipEvery == 0 ? element : nil
+}
+
+// MARK: - MKMapViewDelegate
+extension ViewModel: MKMapViewDelegate {
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let canal = overlay as? Canal {
+            let renderer = MKPolylineRenderer(polyline: canal)
+            renderer.lineWidth = 3
+            renderer.strokeColor = UIColor(.orange)
+            return renderer
+        } else if let canals = overlay as? MKMultiPolyline {
+            let renderer = MKMultiPolylineRenderer(multiPolyline: canals)
+            renderer.lineWidth = 2
+            renderer.strokeColor = UIColor(.accentColor)
+            return renderer
+        } else if let polyline = overlay as? MKPolyline {
+            let renderer = MKPolylineRenderer(polyline: polyline)
+            renderer.lineWidth = 3
+            renderer.strokeColor = UIColor(.red)
+            return renderer
+        } else if let polyline = overlay as? Polyline {
+            let renderer = MKPolylineRenderer(polyline: polyline.mkPolyline)
+            renderer.lineWidth = 3
+            let color: Color
+            if selectedPolyline == polyline {
+                color = .red
+            } else if let canalId = selectedCanalId, polyline.canalId == canalId {
+                color = .yellow
+            } else {
+                color = .green
             }
-            
-            for coord in filteredCoords {
-                let delta = targetCoord.distance(to: coord)
-                
-                if delta < shortestDistance && delta < 1000 {
-                    shortestDistance = delta
-                    closestCoord = coord
-                    closestCanal = canal
-                }
-            }
+            renderer.strokeColor = UIColor(color)
+            return renderer
         }
-        
-        if let closestCanal = closestCanal, let closestCoord = closestCoord {
-            return (closestCoord, closestCanal)
-        } else {
-            return nil
+        return MKOverlayRenderer(overlay: overlay)
+    }
+    
+    func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+        coord = mapView.region.center
+    }
+    
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if let feature = annotation as? Feature {
+            return mapView.dequeueReusableAnnotationView(withIdentifier: FeatureView.id, for: feature)
+        } else if let annotation = annotation as? Annotation {
+            if annotation.type == .search {
+                let marker = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: annotation) as? MKMarkerAnnotationView
+                marker?.clusteringIdentifier = MKMarkerAnnotationView.id
+                marker?.displayPriority = .required
+                marker?.animatesWhenAdded = true
+                return marker
+            } else if annotation.type == .measure {
+                let pin = mapView.dequeueReusableAnnotationView(withIdentifier: MKPinAnnotationView.id, for: annotation) as? MKPinAnnotationView
+                pin?.displayPriority = .required
+                pin?.animatesDrop = true
+                return pin
+            }
+        } else if let cluster = annotation as? MKClusterAnnotation {
+            let marker = mapView.dequeueReusableAnnotationView(withIdentifier: MKMarkerAnnotationView.id, for: cluster) as? MKMarkerAnnotationView
+            marker?.clusteringIdentifier = MKMarkerAnnotationView.id
+            marker?.displayPriority = .required
+            return marker
+        }
+        return nil
+    }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        if let user = view.annotation as? MKUserLocation {
+            mapView.deselectAnnotation(user, animated: false)
+            coord = user.coordinate
+            showFeatureView = true
+        } else if let cluster = view.annotation as? MKClusterAnnotation {
+            zoomTo(cluster.memberAnnotations)
+        } else if isMeasuring {
+            mapView.deselectAnnotation(view.annotation, animated: false)
         }
     }
     
-    func selectClosestCanal(to coord: CLLocationCoordinate2D) {
-        let (_, closestCanal) = getClosestCoordCanal(to: coord, skipEvery: 5) ?? (nil, nil)
-        selectedCanalId = closestCanal?.id
-    }
-    
-    func selectClosestPolyline(to targetCoord: CLLocationCoordinate2D, canalId: String) {
-        var shortestDistance = Double.infinity
-        var closestPolyline: Polyline?
-        
-        for polyline in polylines.filter({ $0.canalId == canalId }) {
-            // Only check every 5 coords
-            let filteredCoords = polyline.mkPolyline.coordinates.enumerated().compactMap { index, element in
-                index % 5 == 0 ? element : nil
-            }
-            
-            for coord in filteredCoords {
-                let delta = targetCoord.distance(to: coord)
-                
-                if delta < shortestDistance && delta < 200 {
-                    shortestDistance = delta
-                    closestPolyline = polyline
-                }
-            }
+    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        if !zoomedIn {
+            zoomedIn = true
+            mapView.setUserTrackingMode(.follow, animated: false)
         }
-        
-        selectedPolyline = closestPolyline
-        resetPolylines()
     }
     
-    func zoomToSelectedPolyline() {
-        if let polyline = selectedPolyline {
-            setRect(polyline.boundingMapRect, extraPadding: true)
+    func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+        if !animated {
+            userTrackingMode = .none
+        }
+    }
+    
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        if let feature = view.annotation as? Feature {
+            if control == view.leftCalloutAccessoryView {
+                selectedFeature = feature
+                showFeatureView = true
+            } else {
+                openInMaps(name: feature.title ?? feature.name, coord: feature.coordinate)
+            }
         }
     }
 }
 
+// MARK: - UISearchBarDelegate
 extension ViewModel: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let text = searchBar.text, text.isNotEmpty else { return }
