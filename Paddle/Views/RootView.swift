@@ -14,13 +14,8 @@ struct RootView: View {
         ZStack {
             MapView()
                 .ignoresSafeArea()
-            
             CanalTitle()
-            
-            VStack {
-                Spacer()
-                FloatingButtons()
-            }
+            FloatingButtons()
         }
         .environmentObject(vm)
         .onAppear {

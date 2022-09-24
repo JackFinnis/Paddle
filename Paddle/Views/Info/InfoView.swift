@@ -15,11 +15,11 @@ struct InfoView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section {} header: {
-                    Text("About Us")
-                } footer: {
-                    Text("Some info...")
-                }
+//                Section {} header: {
+//                    Text("About Us")
+//                } footer: {
+//                    Text("...")
+//                }
                 
                 Section {
                     Button {

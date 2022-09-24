@@ -7,10 +7,13 @@
 
 import Foundation
 
-enum Speed: Int, CaseIterable {
+enum Speed: Int {
     static let sorted: [Speed] = [.slow, .medium]
     
+    // Default
     case medium
+    
+    // Other cases
     case slow
     
     var name: String {
