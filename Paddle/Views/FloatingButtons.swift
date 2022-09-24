@@ -23,44 +23,50 @@ struct FloatingButtons: View {
             Spacer()
             HStack {
                 if let distance = vm.selectedPolyline?.distance ?? vm.distance {
-                    let time: String = {
-                        let time = distance / vm.speed.speed
-                        let formatter = DateComponentsFormatter()
-                        formatter.allowedUnits = [.hour, .minute]
-                        formatter.unitsStyle = .short
-                        return formatter.string(from: time) ?? ""
-                    }()
-                    
+                    if vm.isCompleting {
+                        Spacer()
+                            .layoutPriority(1)
+                    }
                     HStack(spacing: 0) {
-                        Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .wide)) + " • ")
-                            .font(.headline)
-                            .padding(.leading)
-                            .onTapGesture {
-                                vm.zoomToSelectedPolyline()
-                                vm.zoomToPolyline()
+                        if vm.isCompleting {
+                            Button {
+                                vm.savePolyline()
+                            } label: {
+                                Image(systemName: "checkmark.circle")
+                                    .frame(width: SIZE, height: SIZE)
                             }
-                        Menu {
-                            Picker("Speed", selection: $vm.speed) {
-                                ForEach(Speed.sorted, id: \.self) { speed in
-                                    Label(speed.name, systemImage: speed.image)
+                        } else {
+                            DistanceLabel(distance: distance)
+                                .font(.headline)
+                                .padding(.leading)
+                            Text(" • ")
+                            Menu {
+                                Picker("Speed", selection: $vm.speed) {
+                                    ForEach(Speed.sorted, id: \.self) { speed in
+                                        Label(speed.name, systemImage: speed.image)
+                                    }
+                                }
+                            } label: {
+                                let time: String = {
+                                    let time = distance / vm.speed.speed
+                                    let formatter = DateComponentsFormatter()
+                                    formatter.allowedUnits = [.hour, .minute]
+                                    formatter.unitsStyle = .short
+                                    return formatter.string(from: time) ?? ""
+                                }()
+                                Text(time)
+                                    .font(.headline)
+                            }
+                            Spacer()
+                            
+                            if vm.distance == nil {
+                                Button {
+                                    vm.deletePolyline()
+                                } label: {
+                                    Image(systemName: vm.distance == nil ? "checkmark.circle.fill" : "checkmark.circle")
+                                        .frame(width: SIZE, height: SIZE)
                                 }
                             }
-                        } label: {
-                            Text(time)
-                                .font(.headline)
-                                .animation(.none, value: vm.speed)
-                        }
-                        Spacer()
-                        
-                        Button {
-                            if vm.distance == nil {
-                                vm.deletePolyline()
-                            } else {
-                                vm.savePolyline()
-                            }
-                        } label: {
-                            Image(systemName: vm.distance == nil ? "checkmark.circle.fill" : "checkmark.circle")
-                                .frame(width: SIZE, height: SIZE)
                         }
                         
                         Divider().frame(height: SIZE)
@@ -72,10 +78,11 @@ struct FloatingButtons: View {
                                 .frame(width: SIZE, height: SIZE)
                         }
                     }
+                    .animation(.none, value: vm)
                     .background(background)
                     .cornerRadius(10)
                     .frame(maxWidth: 500)
-                    .frame(height: SIZE)
+                    .contentShape(Rectangle())
                     .transition(.move(edge: .bottom))
                     .offset(x: 0, y: offset)
                     .offset(x: vm.noResults ? 20 : 0, y: 0)
@@ -83,19 +90,20 @@ struct FloatingButtons: View {
                         vm.resetMeasuring()
                         vm.deselectPolyline()
                     })
+                    .frame(height: SIZE)
+                    .onTapGesture {
+                        vm.zoomToSelectedPolyline()
+                        vm.zoomToPolyline()
+                    }
                 } else if vm.isMeasuring {
                     HStack(spacing: 0) {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("Measure your trip length")
-                                .font(.headline)
-                            Text(vm.showErrorMessage ? "Tap on a pin to reposition it" : "Tap on the start and end locations")
-                                .font(.subheadline)
-                        }
-                        .padding(.horizontal)
+                        Text(vm.showErrorMessage ? "Tap on a pin to reposition it" : "Tap on the start and end locations")
+                            .font(.subheadline)
+                            .padding(.horizontal)
                         
                         Spacer()
                         
-                        Divider().frame(height: 60)
+                        Divider().frame(height: SIZE)
                         Button {
                             vm.stopMeasuring()
                         } label: {
@@ -103,7 +111,6 @@ struct FloatingButtons: View {
                                 .frame(width: SIZE, height: SIZE)
                         }
                     }
-                    .frame(height: 60)
                     .background(background)
                     .cornerRadius(10)
                     .frame(maxWidth: 500)
@@ -192,18 +199,35 @@ struct FloatingButtons: View {
                             Divider().frame(height: SIZE)
                             
                             Button {
-                                vm.isMeasuring = true
+                                vm.isSearching = true
                             } label: {
-                                Image(systemName: "ruler")
+                                Image(systemName: "magnifyingglass")
                                     .frame(width: SIZE, height: SIZE)
                             }
                             
                             Divider().frame(height: SIZE)
                             
-                            Button {
-                                vm.isSearching = true
+                            Menu {
+                                Button {
+                                    vm.isCompleting = true
+                                    vm.isMeasuring = true
+                                } label: {
+                                    Label("Mark trip as completed", systemImage: "checkmark.circle")
+                                }
+                                
+                                Button {
+                                    vm.isMeasuring = true
+                                } label: {
+                                    Label("Measure trip length", systemImage: "ruler")
+                                }
+                                
+                                Button {
+                                    vm.openInMaps(name: nil, coord: vm.coord)
+                                } label: {
+                                    Label("Open in Maps", systemImage: "arrow.triangle.turn.up.right.circle")
+                                }
                             } label: {
-                                Image(systemName: "magnifyingglass")
+                                Image(systemName: "ellipsis.circle")
                                     .frame(width: SIZE, height: SIZE)
                             }
                         }

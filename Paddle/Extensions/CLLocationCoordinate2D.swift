@@ -14,10 +14,10 @@ extension CLLocationCoordinate2D: Equatable {
     }
     
     func distance(to nextCoord: CLLocationCoordinate2D) -> Double {
-        getLocation().distance(from: nextCoord.getLocation())
+        location.distance(from: nextCoord.location)
     }
     
-    func getLocation() -> CLLocation {
+    var location: CLLocation {
         CLLocation(latitude: latitude, longitude: longitude)
     }
 }

@@ -31,6 +31,7 @@ class ViewModel: NSObject, ObservableObject {
         selectedCanals = canals.filter { $0.id == selectedCanalId }
         mapView?.addOverlays(selectedCanals)
         
+        resetPolylines()
         deselectPolyline()
         
         UIView.animate(withDuration: 0.35) {
@@ -53,9 +54,17 @@ class ViewModel: NSObject, ObservableObject {
     // Measure distance
     var tripPolyline: MKPolyline?
     @Published var annotations = [Annotation]()
-    @Published var isMeasuring = false
+    @Published var isMeasuring = false { didSet {
+        if !isMeasuring {
+            isCompleting = false
+        }
+    }}
+    @Published var isCompleting = false
     @Published var showErrorMessage = false
     @Published var distance: Double?
+    @Published var metric = UserDefaults.standard.bool(forKey: "metric") { didSet {
+        UserDefaults.standard.set(metric, forKey: "metric")
+    }}
     @Published var speed = Speed(rawValue: UserDefaults.standard.integer(forKey: "speed")) ?? .medium { didSet {
         UserDefaults.standard.set(speed.rawValue, forKey: "speed")
     }}
@@ -171,9 +180,17 @@ extension ViewModel {
         mapView?.addOverlays(polylines)
     }
     
+    func resetPolyline(_ polyline: Polyline?) {
+        if let polyline = polyline {
+            mapView?.removeOverlay(polyline)
+            mapView?.addOverlay(polyline)
+        }
+    }
+    
     func deselectPolyline() {
+        let polyline = selectedPolyline
         selectedPolyline = nil
-        resetPolylines()
+        resetPolyline(polyline)
     }
     
     func deletePolyline() {
@@ -196,7 +213,7 @@ extension ViewModel {
         for polyline in polylines.filter({ $0.canalId == canalId }) {
             // Only check every 5 coords
             let filteredCoords = polyline.mkPolyline.coordinates.enumerated().compactMap { index, element in
-                index % 5 == 0 ? element : nil
+                index % 2 == 0 ? element : nil
             }
             
             for coord in filteredCoords {
@@ -209,8 +226,10 @@ extension ViewModel {
             }
         }
         
+        let oldPolyline = selectedPolyline
         selectedPolyline = closestPolyline
-        resetPolylines()
+        resetPolyline(oldPolyline)
+        resetPolyline(selectedPolyline)
     }
     
     func zoomToSelectedPolyline() {
@@ -254,11 +273,11 @@ extension ViewModel {
         mapView?.setVisibleMapRect(rect, edgePadding: padding, animated: true)
     }
     
-    func openInMaps(name: String, coord: CLLocationCoordinate2D) {
-        CLGeocoder().reverseGeocodeLocation(coord.getLocation()) { placemarks, error in
+    func openInMaps(name: String?, coord: CLLocationCoordinate2D) {
+        CLGeocoder().reverseGeocodeLocation(coord.location) { placemarks, error in
             if let placemark = placemarks?.first {
                 let mapItem = MKMapItem(placemark: MKPlacemark(placemark: placemark))
-                mapItem.name = name
+                mapItem.name = name ?? placemark.name
                 mapItem.openInMaps()
             }
         }
@@ -451,7 +470,6 @@ extension ViewModel {
         }
         
         save()
-        selectedPolyline = polyline
         polylines.append(polyline)
         mapView?.addOverlay(polyline)
         stopMeasuring()

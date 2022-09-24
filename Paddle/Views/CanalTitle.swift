@@ -10,10 +10,8 @@ import SwiftUI
 struct CanalTitle: View {
     @EnvironmentObject var vm: ViewModel
     
-    var formattedDistance: String {
-        let totalDistance = vm.selectedCanals.reduce(0) { $0 + $1.distance }
-        let measurement = Measurement(value: Double(totalDistance), unit: UnitLength.meters)
-        return measurement.formatted(.measurement(width: .wide))
+    var totalDistance: Double {
+        Double(vm.selectedCanals.reduce(0) { $0 + $1.distance })
     }
     
     var body: some View {
@@ -21,12 +19,12 @@ struct CanalTitle: View {
             if vm.selectedCanalId == nil {
                 Blur()
                     .ignoresSafeArea()
-//                    .transition(.opacity)
+                    .transition(.opacity)
             } else {
-                VStack {
+                VStack(spacing: 5) {
                     Text(vm.selectedCanals.first?.name ?? "")
                         .font(.headline)
-                    Text(formattedDistance)
+                    DistanceLabel(distance: totalDistance)
                         .font(.subheadline)
                 }
                 .animation(.none, value: vm.selectedCanalId)

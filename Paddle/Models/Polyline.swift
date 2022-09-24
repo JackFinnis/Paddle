@@ -16,16 +16,17 @@ class Polyline: NSManagedObject {
     @NSManaged var type: PolylineType
     @NSManaged var distance: Double
     
-    var mkPolyline: MKPolyline {
+    lazy var mkPolyline: MKPolyline = {
         let coordinates = coords.map { CLLocationCoordinate2DMake($0[0], $0[1]) }
         return MKPolyline(coordinates: coordinates, count: coordinates.count)
-    }
+    }()
 }
 
 extension Polyline: MKOverlay {
     var coordinate: CLLocationCoordinate2D {
         mkPolyline.coordinates.first ?? CLLocationCoordinate2D()
     }
+    
     var boundingMapRect: MKMapRect {
         mkPolyline.boundingMapRect
     }
