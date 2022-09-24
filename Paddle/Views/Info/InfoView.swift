@@ -15,13 +15,15 @@ struct InfoView: View {
     var body: some View {
         NavigationView {
             Form {
-//                Section {} header: {
-//                    Text("About Us")
-//                } footer: {
-//                    Text("...")
-//                }
-                
                 Section {
+                    Button {
+                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                            SKStoreReviewController.requestReview(in: scene)
+                        }
+                    } label: {
+                        Label("Rate \(NAME)", systemImage: "star")
+                    }
+                    
                     Button {
                         showShareSheet = true
                     } label: {
@@ -29,14 +31,6 @@ struct InfoView: View {
                     }
                     .sheet(isPresented: $showShareSheet) {
                         ShareView()
-                    }
-                    
-                    Button {
-                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                            SKStoreReviewController.requestReview(in: scene)
-                        }
-                    } label: {
-                        Label("Rate \(NAME)", systemImage: "star")
                     }
                     
                     Button {
@@ -48,26 +42,43 @@ struct InfoView: View {
                             UIApplication.shared.open(url)
                         }
                     } label: {
-                        Label("Write a Review", systemImage: "quote.bubble")
+                        Label("Write a review", systemImage: "quote.bubble")
                     }
                     
                     Button {
                         let url = URL(string: "mailto:" + EMAIL + "?subject=\(NAME)%20Feedback")!
                         UIApplication.shared.open(url)
                     } label: {
-                        Label("Send Us Feedback", systemImage: "envelope")
+                        Label("Send us feedback", systemImage: "envelope")
                     }
                 } header: {
-                    Text("Contribute")
+                    VStack {
+                        Image("logo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 100)
+                            .cornerRadius(25)
+                        Text(NAME)
+                            .font(.headline)
+                        Text("Version 1.0")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom)
+                        
+                        Text("\(NAME) gives you everything you need to plan your next paddling adventure. Please consider rating the app and sharing it with your friends.")
+                            .font(.subheadline)
+                    }
+                    .padding(.top, -50)
+                    .padding(.horizontal)
                 }
+                .headerProminence(.increased)
                 
                 Section {} header: {
                     Text("Acknowledgements")
                 } footer: {
-                    Text("With thanks to the Canal & River Trust and Open Canal Map UK for providing canal features.")
+                    Text("With thanks to the Canal & River Trust and Open Canal Map UK for providing canal features.\n\n© The Canal & River Trust copyright and database rights reserved 2022.")
                 }
             }
-            .navigationTitle(NAME)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -80,5 +91,11 @@ struct InfoView: View {
                 }
             }
         }
+    }
+}
+
+struct InfoView_Previews: PreviewProvider {
+    static var previews: some View {
+        InfoView()
     }
 }
