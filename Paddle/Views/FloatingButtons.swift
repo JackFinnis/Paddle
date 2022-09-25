@@ -40,22 +40,19 @@ struct FloatingButtons: View {
                                 .font(.headline)
                                 .padding(.leading)
                             Text(" • ")
-                            Menu {
-                                Picker("Speed", selection: $vm.speed) {
-                                    ForEach(Speed.sorted, id: \.self) { speed in
-                                        Label(speed.name, systemImage: speed.image)
+                            if let duration = vm.selectedPolyline?.duration, duration != 0 {
+                                Text("\(duration)")
+                            } else {
+                                Menu {
+                                    Picker("Speed", selection: $vm.speed) {
+                                        ForEach(Speed.sorted, id: \.self) { speed in
+                                            Label(speed.name, systemImage: speed.image)
+                                        }
                                     }
+                                } label: {
+                                    Text((distance / vm.speed.speed).formattedInterval())
+                                        .font(.headline)
                                 }
-                            } label: {
-                                let time: String = {
-                                    let time = distance / vm.speed.speed
-                                    let formatter = DateComponentsFormatter()
-                                    formatter.allowedUnits = [.hour, .minute]
-                                    formatter.unitsStyle = .short
-                                    return formatter.string(from: time) ?? ""
-                                }()
-                                Text(time)
-                                    .font(.headline)
                             }
                             Spacer()
                             
@@ -209,8 +206,13 @@ struct FloatingButtons: View {
                             
                             Menu {
                                 Button {
-                                    vm.isCompleting = true
-                                    vm.isMeasuring = true
+                                    vm.startPaddling()
+                                } label: {
+                                    Label("Record trip", systemImage: "record.circle")
+                                }
+                                
+                                Button {
+                                    vm.startCompleting()
                                 } label: {
                                     Label("Mark trip as completed", systemImage: "checkmark.circle")
                                 }
@@ -272,25 +274,27 @@ struct FloatingButtons: View {
     }
     
     func updateTrackingMode() {
-        if vm.userTrackingMode == .none {
-            vm.userTrackingMode = .follow
-            vm.mapView?.setUserTrackingMode(vm.userTrackingMode, animated: true)
-        } else {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                scale = 0
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                switch vm.userTrackingMode {
-                case .none:
-                    vm.userTrackingMode = .follow
-                case .follow:
-                    vm.userTrackingMode = .followWithHeading
-                default:
-                    vm.userTrackingMode = .none
-                }
+        if vm.validateAuth() {
+            if vm.userTrackingMode == .none {
+                vm.userTrackingMode = .follow
                 vm.mapView?.setUserTrackingMode(vm.userTrackingMode, animated: true)
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    scale = 1
+            } else {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    scale = 0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    switch vm.userTrackingMode {
+                    case .none:
+                        vm.userTrackingMode = .follow
+                    case .follow:
+                        vm.userTrackingMode = .followWithHeading
+                    default:
+                        vm.userTrackingMode = .none
+                    }
+                    vm.mapView?.setUserTrackingMode(vm.userTrackingMode, animated: true)
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        scale = 1
+                    }
                 }
             }
         }

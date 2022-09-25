@@ -15,6 +15,7 @@ class Polyline: NSManagedObject {
     @NSManaged var coords: [[Double]]
     @NSManaged var type: PolylineType
     @NSManaged var distance: Double
+    @NSManaged var duration: Double
     
     lazy var mkPolyline: MKPolyline = {
         let coordinates = coords.map { CLLocationCoordinate2DMake($0[0], $0[1]) }

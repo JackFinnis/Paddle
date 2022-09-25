@@ -6,9 +6,9 @@
 //
 
 import SwiftUI
-import StoreKit
 
 struct InfoView: View {
+    @EnvironmentObject var vm: ViewModel
     @Environment(\.dismiss) var dismiss
     @State var showShareSheet = false
     
@@ -17,9 +17,7 @@ struct InfoView: View {
             Form {
                 Section {
                     Button {
-                        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                            SKStoreReviewController.requestReview(in: scene)
-                        }
+                        vm.requestReview()
                     } label: {
                         Label("Rate \(NAME)", systemImage: "star")
                     }

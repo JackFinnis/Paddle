@@ -26,6 +26,7 @@
 		041A58C228DB28640056D79C /* Polyline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 041A58C128DB28640056D79C /* Polyline.swift */; };
 		041A58C428DB30C60056D79C /* Canals.json in Resources */ = {isa = PBXBuildFile; fileRef = 041A58C328DB30C60056D79C /* Canals.json */; };
 		0435E85B28DFB47F0063A048 /* DistanceLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0435E85A28DFB47F0063A048 /* DistanceLabel.swift */; };
+		0435E85D28E07A080063A048 /* Double.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0435E85C28E07A080063A048 /* Double.swift */; };
 		0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */; };
 		0490E1D828CDE86C0061FBF3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0490E1D728CDE86C0061FBF3 /* Assets.xcassets */; };
 		0490E21F28CDF0B20061FBF3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0490E21E28CDF0B20061FBF3 /* RootView.swift */; };
@@ -64,6 +65,7 @@
 		041A58C128DB28640056D79C /* Polyline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polyline.swift; sourceTree = "<group>"; };
 		041A58C328DB30C60056D79C /* Canals.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Canals.json; sourceTree = "<group>"; };
 		0435E85A28DFB47F0063A048 /* DistanceLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceLabel.swift; sourceTree = "<group>"; };
+		0435E85C28E07A080063A048 /* Double.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Double.swift; sourceTree = "<group>"; };
 		0490E1D028CDE86B0061FBF3 /* Paddle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Paddle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0490E1D328CDE86B0061FBF3 /* PaddleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddleApp.swift; sourceTree = "<group>"; };
 		0490E1D728CDE86C0061FBF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				0490E23028CDFF230061FBF3 /* MKMultiPoint.swift */,
+				0435E85C28E07A080063A048 /* Double.swift */,
 				040BBAC128D11BC300F8E2F6 /* View.swift */,
 				0490E25028CE6DBA0061FBF3 /* CLLocationCoordinate2D.swift */,
 				0490E22628CDF36D0061FBF3 /* Collection.swift */,
@@ -308,6 +311,7 @@
 				041A58B428D73D2D0056D79C /* ShareView.swift in Sources */,
 				041A58C228DB28640056D79C /* Polyline.swift in Sources */,
 				04E885FC28D5233400493649 /* Annotation.swift in Sources */,
+				0435E85D28E07A080063A048 /* Double.swift in Sources */,
 				0490E1D428CDE86B0061FBF3 /* PaddleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -441,7 +445,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Paddle/Info.plist;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is shown on the map";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is shown on the map and used to record paddling trips.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
@@ -473,7 +477,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Paddle/Info.plist;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is shown on the map";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Your location is shown on the map and used to record paddling trips.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";

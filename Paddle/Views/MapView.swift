@@ -34,5 +34,17 @@ struct MapView: UIViewRepresentable {
         return mapView
     }
     
-    func updateUIView(_ mapView: MKMapView, context: Context) {}
+    func updateUIView(_ mapView: MKMapView, context: Context) {
+        UIView.animate(withDuration: 0.35) {
+            var top = CGFloat.zero
+            if self.vm.selectedCanalId != nil {
+                top += 50
+            }
+            if self.vm.isPaddling {
+                top += 60
+            }
+            let padding = UIEdgeInsets(top: top, left: 0, bottom: 0, right: 0)
+            mapView.layoutMargins = padding
+        }
+    }
 }

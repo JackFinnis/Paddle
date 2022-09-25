@@ -9,6 +9,7 @@ import Foundation
 import MapKit
 import CoreData
 import SwiftUI
+import StoreKit
 
 class ViewModel: NSObject, ObservableObject {
     // MARK: - Properties
@@ -33,11 +34,6 @@ class ViewModel: NSObject, ObservableObject {
         
         resetPolylines()
         deselectPolyline()
-        
-        UIView.animate(withDuration: 0.35) {
-            let padding = UIEdgeInsets(top: self.selectedCanalId == nil ? 0 : 50, left: 0, bottom: 0, right: 0)
-            self.mapView?.layoutMargins = padding
-        }
     }}
     
     // Saved polylines
@@ -52,7 +48,7 @@ class ViewModel: NSObject, ObservableObject {
     @Published var isSearching = false
     
     // Measure distance
-    var tripPolyline: MKPolyline?
+    var polyline: MKPolyline?
     @Published var annotations = [Annotation]()
     @Published var isMeasuring = false { didSet {
         if !isMeasuring {
@@ -69,12 +65,28 @@ class ViewModel: NSObject, ObservableObject {
         UserDefaults.standard.set(speed.rawValue, forKey: "speed")
     }}
     
+    // Record route
+    var startedPaddling = Date()
+    var startCoord = CLLocationCoordinate2D()
+    var counter = 0
+    var timer: Timer?
+    var tripPolyline = MKPolyline()
+    var duration = Double.zero
+    @Published var tripError = false
+    @Published var tripDistance = Double.zero
+    @Published var isPaddling = false
+    
     // Map View
     var zoomedIn = false
     var coord = CLLocationCoordinate2D()
     var mapView: MKMapView?
     @Published var userTrackingMode = MKUserTrackingMode.none
     @Published var mapType = MKMapType.standard
+    
+    // CLLocationManager
+    let manager = CLLocationManager()
+    var authStatus = CLAuthorizationStatus.notDetermined
+    @Published var authError = false
     
     // Persistence
     let container = NSPersistentContainer(name: "Paddle")
@@ -175,6 +187,11 @@ extension ViewModel {
 
 // MARK: - Saved Polylines
 extension ViewModel {
+    func startCompleting() {
+        isCompleting = true
+        isMeasuring = true
+    }
+    
     func resetPolylines() {
         mapView?.removeOverlays(polylines)
         mapView?.addOverlays(polylines)
@@ -235,6 +252,12 @@ extension ViewModel {
     func zoomToSelectedPolyline() {
         if let polyline = selectedPolyline {
             setRect(polyline.boundingMapRect, extraPadding: true)
+        }
+    }
+    
+    func requestReview() {
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            SKStoreReviewController.requestReview(in: scene)
         }
     }
 }
@@ -371,7 +394,11 @@ extension ViewModel {
             mapView?.addAnnotation(annotation)
             
             if annotations.count == 2 {
-                calculateDistance(from: annotations[0].coordinate, to: annotations[1].coordinate)
+                let coords = calculateRoute(from: annotations[0].coordinate, to: annotations[1].coordinate)
+                polyline = MKPolyline(coordinates: coords, count: coords.count)
+                mapView?.addOverlay(polyline!)
+                distance = coords.getDistance()
+                zoomToPolyline()
             }
         }
     }
@@ -389,21 +416,21 @@ extension ViewModel {
     }
     
     func resetPolyline() {
-        if let polyline = tripPolyline {
+        if let polyline = polyline {
             mapView?.removeOverlay(polyline)
         }
-        tripPolyline = nil
+        polyline = nil
     }
     
-    func calculateDistance(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) {
+    func calculateRoute(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) -> [CLLocationCoordinate2D] {
         func fail() {
             noResults = true
             showErrorMessage = true
         }
         
-        guard let (startCoord, startCanal) = getClosestCoordCanal(to: start) else { fail(); return }
+        guard let (startCoord, startCanal) = getClosestCoordCanal(to: start) else { fail(); return [] }
         selectedCanalId = startCanal.id
-        guard let (endCoord, _) = getClosestCoordCanal(to: end, outOf: selectedCanals) else { fail(); return }
+        guard let (endCoord, _) = getClosestCoordCanal(to: end, outOf: selectedCanals) else { fail(); return [] }
         
         // Need to get a list of all the coords along this line
         var coordinates = [CLLocationCoordinate2D]()
@@ -441,22 +468,19 @@ extension ViewModel {
         
         guard let startIndex = coordinates.firstIndex(of: startCoord),
               let endIndex = coordinates.firstIndex(of: endCoord)
-        else { fail(); return }
+        else { fail(); return [] }
         
         let min = min(startIndex, endIndex)
         let max = max(startIndex, endIndex)
         let coords = Array(coordinates[min...max])
         
         showErrorMessage = false
-        tripPolyline = MKPolyline(coordinates: coords, count: coords.count)
-        mapView?.addOverlay(tripPolyline!)
-        distance = coords.getDistance()
-        zoomToPolyline()
+        return coords
     }
     
     func zoomToPolyline() {
-        if tripPolyline?.coordinates.isNotEmpty ?? false {
-            setRect(tripPolyline!.boundingMapRect, extraPadding: true)
+        if polyline?.coordinates.isNotEmpty ?? false {
+            setRect(polyline!.boundingMapRect, extraPadding: true)
         }
     }
     
@@ -465,15 +489,101 @@ extension ViewModel {
         polyline.type = .completed
         polyline.canalId = selectedCanalId ?? ""
         polyline.distance = distance ?? 0
-        polyline.coords = (tripPolyline?.coordinates ?? []).map { coord in
+        polyline.duration = duration
+        polyline.coords = (self.polyline?.coordinates ?? []).map { coord in
             [coord.latitude, coord.longitude]
         }
         
+        duration = 0
         save()
         polylines.append(polyline)
         mapView?.addOverlay(polyline)
         stopMeasuring()
         Haptics.success()
+    }
+}
+
+// MARK: - Record Trip
+extension ViewModel {
+    func startPaddling() {
+        if validateAuth() {
+            tripDistance = 0
+            startedPaddling = Date.now
+            startCoord = mapView?.userLocation.coordinate ?? CLLocationCoordinate2D()
+            isPaddling = true
+            counter = 0
+            timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                self.handleTimer()
+            }
+            userTrackingMode = .followWithHeading
+            mapView?.setUserTrackingMode(.followWithHeading, animated: true)
+            zoomTo(mapView?.userLocation == nil ? [] : [mapView!.userLocation])
+            selectClosestCanal(to: startCoord)
+        }
+    }
+    
+    func handleTimer() {
+        objectWillChange.send()
+        
+        counter += 1
+        if counter == 20 {
+            counter = 0
+            
+            let coords = self.calculateRoute(from: self.startCoord, to: self.mapView?.userLocation.coordinate ?? self.startCoord)
+            tripPolyline = MKPolyline(coordinates: coords, count: coords.count)
+            mapView?.addOverlay(tripPolyline)
+            tripDistance = coords.getDistance()
+        }
+    }
+    
+    func stopPaddling() {
+        timer?.invalidate()
+        mapView?.removeOverlay(tripPolyline)
+        isPaddling = false
+        duration = startedPaddling.distance(to: .now)
+        
+        let coords = self.calculateRoute(from: self.startCoord, to: self.mapView?.userLocation.coordinate ?? self.startCoord)
+        showErrorMessage = false
+        guard coords.isNotEmpty else { tripError = true; return }
+        
+        selectClosestCanal(to: startCoord)
+        distance = coords.getDistance()
+        tripPolyline = MKPolyline(coordinates: coords, count: coords.count)
+        savePolyline()
+        requestReview()
+        
+        var totalDistance = UserDefaults.standard.double(forKey: "totalDistance")
+        totalDistance += distance ?? 0
+        UserDefaults.standard.set(totalDistance, forKey: "totalDistance")
+        
+        var totalDuration = UserDefaults.standard.double(forKey: "totalDuration")
+        totalDuration += duration
+        UserDefaults.standard.set(totalDuration, forKey: "totalDuration")
+    }
+}
+
+// MARK: - CLLocationManagerDelegate
+extension ViewModel: CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authStatus = manager.authorizationStatus
+        if authStatus == .denied {
+            authError = true
+        }
+    }
+    
+    func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    func validateAuth() -> Bool {
+        if authStatus == .denied {
+            authError = true
+            return false
+        } else {
+            return true
+        }
     }
 }
 
