@@ -218,7 +218,7 @@ extension ViewModel {
             container.viewContext.delete(polyline)
             save()
             
-            deselectPolyline()
+            selectedPolyline = nil
             Haptics.success()
         }
     }
@@ -515,10 +515,10 @@ extension ViewModel {
             timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 self.handleTimer()
             }
+            selectClosestCanal(to: startCoord)
+            zoomTo(mapView?.userLocation == nil ? [] : [mapView!.userLocation])
             userTrackingMode = .followWithHeading
             mapView?.setUserTrackingMode(.followWithHeading, animated: true)
-            zoomTo(mapView?.userLocation == nil ? [] : [mapView!.userLocation])
-            selectClosestCanal(to: startCoord)
         }
     }
     
