@@ -28,6 +28,7 @@ struct EditFeatureView: View {
                                 FeatureTypeRow(type)
                             }
                         }
+                        
                         if editFeatureVM.type == .lock {
                             HStack {
                                 Text("Direction")

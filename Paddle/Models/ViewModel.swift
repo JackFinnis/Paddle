@@ -14,6 +14,7 @@ import StoreKit
 class ViewModel: NSObject, ObservableObject {
     // MARK: - Properties
     var features = [Feature]()
+    var featuresAdded = false
     var selectedFeature: Feature?
     @Published var showFeatureView = false { didSet {
         if showFeatureView {
@@ -180,8 +181,6 @@ extension ViewModel {
             }
             save()
         }
-        
-        mapView?.addAnnotations(features)
     }
 }
 
@@ -624,6 +623,17 @@ extension ViewModel: MKMapViewDelegate {
     
     func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
         coord = mapView.region.center
+        if mapView.region.span.latitudeDelta > 0.5 {
+            if featuresAdded {
+                mapView.removeAnnotations(features)
+                featuresAdded = false
+            }
+        } else {
+            if !featuresAdded {
+                mapView.addAnnotations(features)
+                featuresAdded = true
+            }
+        }
     }
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
