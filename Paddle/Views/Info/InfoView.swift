@@ -57,7 +57,7 @@ struct InfoView: View {
                             .frame(height: 100)
                             .cornerRadius(25)
                         Text(NAME)
-                            .font(.headline)
+                            .font(.title3.bold())
                         Text("Version 1.0")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -66,7 +66,6 @@ struct InfoView: View {
                         Text("\(NAME) gives you everything you need to plan your next paddling adventure. Please consider rating the app and sharing it with your friends.")
                             .font(.subheadline)
                     }
-                    .padding(.top, -50)
                     .padding(.horizontal)
                 }
                 .headerProminence(.increased)

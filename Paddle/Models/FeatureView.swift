@@ -45,7 +45,7 @@ class FeatureView: MKAnnotationView {
             leftCalloutAccessoryView = editBtn
             
             let openBtn = UIButton()
-            let openImg = UIImage(systemName: "arrow.triangle.turn.up.right.circle", withConfiguration: config)
+            let openImg = UIImage(systemName: "arrow.triangle.turn.up.right.diamond", withConfiguration: config)
             openBtn.setImage(openImg, for: .normal)
             openBtn.frame.size = CGSize(width: SIZE, height: SIZE)
             rightCalloutAccessoryView = openBtn

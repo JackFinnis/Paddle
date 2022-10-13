@@ -8,9 +8,9 @@
 import SwiftUI
 
 let SIZE = 48.0
-let EMAIL = ""
-let NAME = "Paddle"
-let APP_URL = URL(string: "https://apps.apple.com/app/id1581278416")!
+let EMAIL = "hoverbug@btinternet.com"
+let NAME = "PaddleMap"
+let APP_URL = URL(string: "https://apps.apple.com/app/id6443834631")!
 
 @main
 struct PaddleApp: App {

@@ -36,10 +36,11 @@ struct FloatingButtons: View {
                                     .frame(width: SIZE, height: SIZE)
                             }
                         } else {
-                            DistanceLabel(distance: distance)
+                            DistanceButton(distance: distance)
                                 .font(.headline)
                                 .padding(.leading)
-                            Text(" • ")
+                            Spacer(minLength: 0)
+                            
                             if let duration = vm.selectedPolyline?.duration, duration != 0 {
                                 Text("\(duration)")
                             } else {
@@ -52,10 +53,10 @@ struct FloatingButtons: View {
                                 } label: {
                                     Text((distance / vm.speed.speed).formattedInterval())
                                         .font(.headline)
+                                        .animation(.none)
+                                        .frame(width: 100)
                                 }
                             }
-                            Spacer()
-                            
                             if vm.distance == nil {
                                 Button {
                                     vm.deletePolyline()
@@ -214,7 +215,7 @@ struct FloatingButtons: View {
                                 Button {
                                     vm.startCompleting()
                                 } label: {
-                                    Label("Mark trip as completed", systemImage: "checkmark.circle")
+                                    Label("Mark trip completed", systemImage: "checkmark.circle")
                                 }
                                 
                                 Button {
@@ -226,7 +227,7 @@ struct FloatingButtons: View {
                                 Button {
                                     vm.openInMaps(name: nil, coord: vm.coord)
                                 } label: {
-                                    Label("Open in Maps", systemImage: "arrow.triangle.turn.up.right.circle")
+                                    Label("Open in Maps", systemImage: "arrow.triangle.turn.up.right.diamond")
                                 }
                             } label: {
                                 Image(systemName: "ellipsis.circle")

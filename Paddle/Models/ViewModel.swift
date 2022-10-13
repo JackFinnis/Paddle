@@ -652,14 +652,14 @@ extension ViewModel: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        if let user = view.annotation as? MKUserLocation {
+        if isMeasuring {
+            mapView.deselectAnnotation(view.annotation, animated: false)
+        } else if let user = view.annotation as? MKUserLocation {
             mapView.deselectAnnotation(user, animated: false)
             coord = user.coordinate
             showFeatureView = true
         } else if let cluster = view.annotation as? MKClusterAnnotation {
             zoomTo(cluster.memberAnnotations)
-        } else if isMeasuring {
-            mapView.deselectAnnotation(view.annotation, animated: false)
         }
     }
     

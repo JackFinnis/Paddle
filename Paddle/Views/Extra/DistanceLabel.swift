@@ -7,6 +7,26 @@
 
 import SwiftUI
 
+struct DistanceButton: View {
+    @EnvironmentObject var vm: ViewModel
+    
+    let distance: Double
+    
+    var body: some View {
+        Menu {
+            Picker("Unit Distance", selection: $vm.metric) {
+                Text("Miles")
+                    .tag(false)
+                Text("Kilometers")
+                    .tag(true)
+            }
+        } label: {
+            DistanceLabel(distance: distance)
+                .frame(width: 100)
+        }
+    }
+}
+
 struct DistanceLabel: View {
     @EnvironmentObject var vm: ViewModel
     
@@ -22,15 +42,7 @@ struct DistanceLabel: View {
     }
     
     var body: some View {
-        Menu {
-            Picker("Unit Distance", selection: $vm.metric) {
-                Label("Imperial", systemImage: "scalemass")
-                    .tag(false)
-                Label("Metric", systemImage: "ruler")
-                    .tag(true)
-            }
-        } label: {
-            Text(formattedDistance)
-        }
+        Text(formattedDistance)
+            .animation(.none)
     }
 }

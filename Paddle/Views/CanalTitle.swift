@@ -25,11 +25,12 @@ struct CanalTitle: View {
                     .ignoresSafeArea()
                     .transition(.opacity)
             } else {
-                VStack(spacing: 5) {
+                VStack {
                     Text(vm.selectedCanals.first?.name ?? "")
                         .font(.headline)
                     DistanceLabel(distance: totalDistance)
                         .font(.subheadline.bold())
+                        .foregroundColor(.secondary)
                 }
                 .animation(.none, value: vm.selectedCanalId)
                 .frame(height: 50)
@@ -41,12 +42,11 @@ struct CanalTitle: View {
             
             if vm.isPaddling {
                 HStack(spacing: 0) {
-                    DistanceLabel(distance: vm.tripDistance)
-                        .padding(.leading)
-                    Text(" • ")
-                    Text(vm.startedPaddling, style: .timer)
-                    Spacer()
+                    DistanceButton(distance: vm.tripDistance)
                     
+                    Spacer()
+                    Text(vm.startedPaddling, style: .timer)
+                        .padding(.trailing)
                     Divider().frame(height: SIZE)
                     Button {
                         showStopConfimation = true
