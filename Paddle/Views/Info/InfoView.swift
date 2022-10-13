@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct InfoView: View {
+    @Environment(\.openURL) var openURL
     @EnvironmentObject var vm: ViewModel
     @Environment(\.dismiss) var dismiss
     @State var showShareSheet = false
@@ -15,7 +16,42 @@ struct InfoView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section {
+                Section {} header: {
+                    VStack(alignment: .leading) {
+                        VStack {
+                            Image("logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 100)
+                                .cornerRadius(25)
+                            Text(NAME)
+                                .font(.title3.bold())
+                            Text("Version 1.0")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.bottom)
+                        .horizontallyCentred()
+                        
+                        Text("\(NAME) gives you everything you need to plan your next paddling adventure. Please consider rating the app and sharing it with your friends.")
+                            .font(.subheadline)
+                        
+                        Group {
+                            Text("You can find paddling spots with the ") +
+                            Text("GoPaddling")
+                                .foregroundColor(.accentColor) +
+                            Text(" app.")
+                        }
+                        .font(.subheadline)
+                        .padding(.top)
+                        .onTapGesture {
+                            openURL(URL(string: "https://apps.apple.com/app/id505471592")!)
+                        }
+                    }
+                }
+                .headerProminence(.increased)
+                
+                Section("Contribute") {
                     Button {
                         vm.requestReview()
                     } label: {
@@ -49,26 +85,7 @@ struct InfoView: View {
                     } label: {
                         Label("Send us feedback", systemImage: "envelope")
                     }
-                } header: {
-                    VStack {
-                        Image("logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 100)
-                            .cornerRadius(25)
-                        Text(NAME)
-                            .font(.title3.bold())
-                        Text("Version 1.0")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom)
-                        
-                        Text("\(NAME) gives you everything you need to plan your next paddling adventure. Please consider rating the app and sharing it with your friends.")
-                            .font(.subheadline)
-                    }
-                    .padding(.horizontal)
                 }
-                .headerProminence(.increased)
                 
                 Section {} header: {
                     Text("Acknowledgements")

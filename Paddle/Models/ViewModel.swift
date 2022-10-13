@@ -97,7 +97,7 @@ class ViewModel: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        CLLocationManager().requestWhenInUseAuthorization()
+        manager.delegate = self
     }
 }
 
@@ -567,6 +567,8 @@ extension ViewModel: CLLocationManagerDelegate {
         authStatus = manager.authorizationStatus
         if authStatus == .denied {
             authError = true
+        } else if authStatus == .notDetermined {
+            manager.requestWhenInUseAuthorization()
         }
     }
     
